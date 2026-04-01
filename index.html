@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>OFC Smart Hub - Mobile Optimized</title>
+<title>OFC Smart Hub - Mobile Perfect</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
     --seven-orange: #f38200; --seven-green: #00885a; --seven-red: #e3000f;
@@ -18,9 +19,8 @@
     header { background: var(--text-main); color: white; padding: 15px 20px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, var(--seven-orange) 33%, var(--seven-green) 33%, var(--seven-green) 66%, var(--seven-red) 66%); }
     
-    /* スマホ向け：タブを大きく */
     .nav-tabs { display: flex; background: var(--card-bg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-    .nav-tabs button { flex: 1; padding: 16px 12px; color: #718096; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 14px; font-weight: bold; }
+    .nav-tabs button { flex: 1; padding: 15px 12px; color: #718096; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 14px; font-weight: bold; }
     .nav-tabs button.active { color: var(--seven-green); border-bottom: 3px solid var(--seven-green); }
     
     .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
@@ -28,82 +28,82 @@
     .tab-content.active { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* スマホ向け：入力欄とボタンを大きく */
-    input, select, textarea { font-size: 16px !important; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--seven-green); background: #f8fafc; }
+    /* スマホ向けに入力欄とボタンを大型化 */
+    input, select, textarea { font-size: 16px !important; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 12px; font-family: inherit; background: #fff; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--seven-green); box-shadow: 0 0 0 2px rgba(0,136,90,0.2); }
     
-    .input-panel { background: #f8fafc; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+    .input-panel { background: #f8fafc; padding: 20px 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     .input-panel h2 { font-size: 17px; border-left: 5px solid var(--seven-orange); padding-left: 10px; margin-top: 0; margin-bottom: 15px; }
     
-    .btn { background: var(--seven-green); color: white; padding: 14px 20px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; }
-    .btn:hover { opacity: 0.9; }
-    .btn-sub { background: #64748b; font-size: 13px; padding: 8px 15px; border-radius: 6px; }
+    .btn { background: var(--seven-green); color: white; padding: 15px 20px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; text-align: center; }
+    .btn:active { transform: translateY(2px); }
+    .btn-sub { background: #64748b; font-size: 13px; padding: 10px 15px; border-radius: 6px; }
     .del-btn { background: #fee2e2; color: var(--seven-red); border: none; border-radius: 6px; padding: 10px 15px; cursor: pointer; font-weight: bold; }
     
-    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
     .row input, .row select { margin-bottom: 0; }
   }
 
   /* --- ① TODOタブ --- */
-  .kanban-board { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
-  .kanban-col { flex: 1; min-width: 280px; background: #edf2f7; border-radius: 8px; padding: 12px; min-height: 100px; max-height: 55vh; overflow-y: auto; }
-  .kanban-col h3 { text-align: center; font-size: 15px; margin-top: 0; margin-bottom: 12px; color: #4a5568; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; }
-  .task-card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 5px solid #cbd5e1; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+  .kanban-board { display: flex; gap: 15px; align-items: flex-start; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; }
+  .kanban-col { flex: 1; min-width: 280px; max-width: 350px; background: #edf2f7; border-radius: 10px; padding: 15px; min-height: 150px; max-height: 60vh; overflow-y: auto; scroll-snap-align: start; }
+  .kanban-col h3 { text-align: center; font-size: 15px; margin-top: 0; margin-bottom: 12px; color: #4a5568; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; font-weight: 900; }
+  .task-card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 5px solid #cbd5e1; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
   .task-card.high-priority { border-left-color: var(--seven-red); background: #fff5f5; }
+  .task-category-badge { display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 4px; margin-bottom: 6px; background: #e2e8f0; color: #4a5568; }
   .task-title { font-weight: bold; font-size: 15px; margin-bottom: 8px; white-space: pre-wrap; line-height: 1.4; }
-  .task-meta { font-size: 13px; color: #718096; margin-bottom: 12px; }
-  .deadline-badge { display: inline-block; padding: 3px 6px; background: #e2e8f0; border-radius: 4px; margin-top: 4px; font-size: 12px; }
-  .deadline-alert { background: #fee2e2; color: var(--seven-red); font-weight: bold; }
+  .task-meta { font-size: 13px; color: #718096; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .deadline-badge { padding: 3px 6px; background: #e2e8f0; border-radius: 4px; font-size: 12px; font-weight: bold; }
+  .deadline-alert { background: #fee2e2; color: var(--seven-red); }
   .task-actions { display: flex; justify-content: flex-end; gap: 8px; }
   .task-actions button { font-size: 12px; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-  .charts-wrapper { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
-  .chart-box { flex: 1; min-width: 280px; max-width: 350px; background: white; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; }
+  
+  /* グラフ3つ対応 */
+  .charts-wrapper { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; margin-top: 15px; }
+  .chart-box { flex: 1; min-width: 260px; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; scroll-snap-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
-  /* --- ② 店舗案内作成タブ (印刷・プレビュー兼用) --- */
-  .layout-split { display: flex; gap: 20px; flex-wrap: wrap; }
-  .form-side { flex: 1; min-width: 320px; height: 80vh; overflow-y: auto; padding-right: 5px; }
-  .preview-side { flex: 1.5; min-width: 380px; background: #94a3b8; padding: 20px; display: flex; justify-content: center; overflow-x: auto; }
-  .a4-paper { width: 210mm; min-height: 297mm; background: white; padding: 10mm; box-sizing: border-box; color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.3); font-family: 'Noto Sans JP', sans-serif; }
-  .a4-title { text-align: center; font-size: 22px; font-weight: 900; border-bottom: 3px solid var(--seven-green); margin-bottom: 10px; padding-bottom: 5px; }
-  .a4-period { text-align: right; font-size: 13px; margin-bottom: 5px; font-weight: bold; }
-  .section-h { background: #f1f5f9; padding: 4px 8px; font-size: 14px; font-weight: bold; border-left: 5px solid var(--seven-orange); margin: 10px 0 6px 0; display: flex; justify-content: space-between; align-items: center; }
-  .cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 10px; }
+  /* --- ② 店舗案内作成タブ --- */
+  .preview-container { width: 100%; overflow-x: auto; background: #94a3b8; padding: 20px; border-radius: 10px; margin-top: 15px; box-sizing: border-box; }
+  .a4-paper { width: 210mm; min-height: 297mm; background: white; padding: 12mm; box-sizing: border-box; color: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: 'Noto Sans JP', sans-serif; margin: 0 auto; }
+  
+  .a4-title { text-align: center; font-size: 24px; font-weight: 900; border-bottom: 3px solid var(--seven-green); margin-bottom: 12px; padding-bottom: 5px; }
+  .a4-period { text-align: right; font-size: 13px; margin-bottom: 8px; font-weight: bold; }
+  .section-h { background: #f1f5f9; padding: 6px 10px; font-size: 15px; font-weight: bold; border-left: 5px solid var(--seven-orange); margin: 15px 0 8px 0; display: flex; justify-content: space-between; align-items: center; }
+  .cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 15px; }
   .cal-grid th, .cal-grid td { border: 1px solid #333; padding: 2px; vertical-align: top; }
-  .cal-grid th { background: #e2e8f0; font-size: 11px; height: 18px; text-align: center; }
-  .cal-grid td { height: 50px; position: relative; }
-  .date-num { font-size: 10px; font-weight: bold; margin-bottom: 1px; display: block; padding-left: 2px; }
-  .special-label { color: var(--seven-red); font-size: 9px; font-weight: 900; background: #ffe4e6; display: block; text-align: center; border: 1px solid var(--seven-red); margin-bottom: 1px; }
-  .promo-bar { font-size: 9px; background: var(--seven-orange); color: white; padding: 1px 3px; margin-bottom: 1px; border-radius: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
+  .cal-grid th { background: #e2e8f0; font-size: 12px; height: 20px; text-align: center; }
+  .cal-grid td { height: 60px; position: relative; }
+  .date-num { font-size: 11px; font-weight: bold; margin-bottom: 2px; display: block; padding-left: 3px; }
+  .special-label { color: var(--seven-red); font-size: 10px; font-weight: 900; background: #ffe4e6; display: block; text-align: center; border: 1px solid var(--seven-red); margin-bottom: 1px; }
+  .promo-bar { font-size: 10px; background: var(--seven-orange); color: white; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
   .single-event { background: #475569; font-weight: normal; }
-  .info-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-  .info-table th, .info-table td { border: 1px solid #333; padding: 4px; font-size: 11px; text-align: center; vertical-align: middle; }
+  .info-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+  .info-table th, .info-table td { border: 1px solid #333; padding: 6px; font-size: 12px; text-align: center; vertical-align: middle; }
   .info-table th { background: #f8fafc; font-weight: bold; }
-  .star-3-bold { font-weight: 900; font-size: 12.5px; text-decoration: underline; text-decoration-color: var(--seven-red); text-decoration-thickness: 2px; }
-  .memo-box { font-size: 12px; white-space: pre-wrap; border: 1px solid #333; padding: 8px; min-height: 40px; line-height: 1.4; }
+  .star-3-bold { font-weight: 900; font-size: 13px; text-decoration: underline; text-decoration-color: var(--seven-red); text-decoration-thickness: 2px; }
+  .memo-box { font-size: 13px; white-space: pre-wrap; border: 1px solid #333; padding: 10px; min-height: 50px; line-height: 1.5; }
 
-  /* --- ③ 上長報告タブ (スマホ縦並び特化) --- */
+  /* --- ③ 上長報告タブ --- */
   .report-row { display: flex; flex-direction: column; background: white; padding: 15px; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
   .store-name-label { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: var(--seven-green); border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; width: 100%; }
   .report-inputs-wrap { display: flex; gap: 10px; width: 100%; }
   .report-inputs-wrap input { flex: 1; margin-bottom: 0; }
 
-  /* --- ④ 日報作成タブ (押しやすいチェックボックス) --- */
+  /* --- ④ 日報作成タブ --- */
   .store-checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 15px; }
-  .store-checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; background: #f1f5f9; padding: 12px 18px; border-radius: 25px; border: 1px solid #e2e8f0; font-weight: bold; color: var(--text-main); transition: 0.2s; }
-  .store-checkbox-group label:active { background: #e2e8f0; }
+  .store-checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; background: #f1f5f9; padding: 12px 18px; border-radius: 25px; border: 1px solid #e2e8f0; font-weight: bold; transition: 0.2s; }
   .store-checkbox-group input[type="checkbox"] { width: 20px; height: 20px; margin: 0; accent-color: var(--seven-green); }
-  
   .photo-upload-area { border: 2px dashed #cbd5e1; padding: 25px; text-align: center; border-radius: 10px; background: white; cursor: pointer; margin-bottom: 15px; }
-  .photo-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
+  .photo-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
   .photo-card { background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center; }
-  .photo-card img { max-width: 100%; height: 120px; object-fit: contain; margin-bottom: 10px; background: #f0f2f5; border-radius: 4px; }
+  .photo-card img { max-width: 100%; height: 100px; object-fit: contain; margin-bottom: 10px; background: #f0f2f5; border-radius: 4px; }
 
   /* --- 印刷用設定 --- */
   @media print {
     body * { visibility: hidden; }
     #print-area, #print-area * { visibility: visible; }
-    #print-area { position: absolute; left: 0; top: 0; width: 210mm; box-shadow: none; padding: 8mm; }
-    .nav-tabs, header, .form-side { display: none; }
+    #print-area { position: absolute; left: 0; top: 0; width: 210mm; box-shadow: none; padding: 8mm; margin: 0; }
+    .nav-tabs, header, .input-panel, .btn-group { display: none !important; }
     @page { size: A4 portrait; margin: 0; }
   }
 </style>
@@ -111,15 +111,15 @@
 <body>
 
 <header>
-  <h1 style="margin:0; font-size:20px;">OFC Smart Hub</h1>
-  <div style="font-size:10px; color:#a0aec0; letter-spacing:2px;">Field Management System</div>
+  <h1 style="margin:0; font-size:22px;">OFC Smart Hub</h1>
+  <div style="font-size:11px; color:#a0aec0; letter-spacing:2px; margin-top:2px;">Field Management System</div>
 </header>
 
 <div class="nav-tabs">
   <button class="tab-btn active" onclick="switchTab('tab1')">① TODO</button>
-  <button class="tab-btn" onclick="switchTab('tab2')">② 店舗案内</button>
-  <button class="tab-btn" onclick="switchTab('tab3')">③ 上長報告</button>
-  <button class="tab-btn" onclick="switchTab('tab4')">④ 日報作成</button>
+  <button class="tab-btn" onclick="switchTab('tab2')">② 案内作成</button>
+  <button class="tab-btn" onclick="switchTab('tab3')">③ 報告</button>
+  <button class="tab-btn" onclick="switchTab('tab4')">④ 日報</button>
   <button class="tab-btn" onclick="switchTab('tab0')">⚙️ 設定</button>
 </div>
 
@@ -143,101 +143,131 @@ C店</textarea>
         <option value="7">完了から 1週間後 に消去</option>
       </select>
       
-      <button class="btn" style="width:100%; margin-top:20px; font-size:17px;" onclick="saveSettings()">設定を保存して反映する</button>
+      <button class="btn" style="width:100%; margin-top:20px;" onclick="saveSettings()">設定を保存して反映する</button>
     </div>
   </div>
 
   <div id="tab1" class="tab-content active">
     <div class="input-panel">
-      <textarea id="task-input" rows="2" placeholder="タスク内容を入力..."></textarea>
-      <select id="todo-store-select"></select>
-      <div class="row" style="margin-top:5px; justify-content:space-between;">
-        <label style="font-size:15px; color:#4a5568;">期限: <input type="date" id="todo-deadline" style="width:140px; display:inline-block;"></label>
-        <label style="font-size:15px; color:var(--seven-red); font-weight:bold;"><input type="checkbox" id="todo-priority" style="width:20px; height:20px; vertical-align:middle;"> 🔥最優先</label>
+      <h2>📝 新規タスク登録</h2>
+      
+      <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px;">タスク内容</label>
+      <textarea id="task-input" rows="2" placeholder="陳列確認、オーナー面談など..."></textarea>
+      
+      <div class="row">
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:13px; font-weight:bold; color:#666;">タスク分類</label>
+          <select id="todo-category" style="margin-top:4px;">
+            <option value="OFC業務">💼 OFC業務</option>
+            <option value="オペレーション">⚙️ オペレーション</option>
+            <option value="店舗業務">🏪 店舗業務</option>
+            <option value="その他">📝 その他</option>
+          </select>
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:13px; font-weight:bold; color:#666;">対象店舗</label>
+          <select id="todo-store-select" style="margin-top:4px;"></select>
+        </div>
       </div>
-      <button class="btn" style="width:100%; margin-top:10px;" onclick="addTask()">タスクを追加</button>
+      
+      <div class="row" style="justify-content:space-between; margin-top:5px;">
+        <label style="font-size:15px; font-weight:bold;">期限: <input type="date" id="todo-deadline" style="width:150px; display:inline-block; margin-left:10px;"></label>
+        <label style="font-size:16px; color:var(--seven-red); font-weight:bold;"><input type="checkbox" id="todo-priority" style="width:22px; height:22px; vertical-align:-5px; margin-right:5px;"> 🔥最優先</label>
+      </div>
+      <button class="btn" style="width:100%; margin-top:15px;" onclick="addTask()">タスクを追加</button>
     </div>
 
     <div class="kanban-board">
-      <div class="kanban-col"><h3>未着手</h3><div id="list-todo"></div></div>
-      <div class="kanban-col"><h3>対応中</h3><div id="list-doing"></div></div>
-      <div class="kanban-col"><h3>完了</h3><div id="list-done"></div></div>
+      <div class="kanban-col"><h3>📌 未着手</h3><div id="list-todo"></div></div>
+      <div class="kanban-col"><h3>🏃 対応中</h3><div id="list-doing"></div></div>
+      <div class="kanban-col"><h3>✅ 完了</h3><div id="list-done"></div></div>
     </div>
 
-    <div class="input-panel" style="margin-top:40px; background:white;">
-      <h3 style="text-align:center; margin-top:0; font-size:16px;">📊 タスク達成率</h3>
+    <div class="input-panel" style="margin-top:20px; background:white;">
+      <h3 style="text-align:center; margin-top:0; font-size:17px;">📊 タスク進捗ダッシュボード</h3>
+      <p style="font-size:12px; text-align:center; color:#666; margin-top:-5px;">※横にスワイプしてグラフを確認できます</p>
+      
       <div class="charts-wrapper">
         <div class="chart-box">
           <h4 style="margin-top:0; font-size:15px; color:var(--seven-orange);">本日のタスク</h4>
-          <div style="height:160px; position:relative;"><canvas id="dailyPieChart"></canvas></div>
+          <div style="height:150px; position:relative;"><canvas id="dailyPieChart"></canvas></div>
           <div id="daily-stats-text" style="font-size:14px; font-weight:bold; margin-top:10px;"></div>
         </div>
         <div class="chart-box">
           <h4 style="margin-top:0; font-size:15px; color:var(--seven-orange);">今週のタスク（月〜金）</h4>
-          <div style="height:160px; position:relative;"><canvas id="weeklyPieChart"></canvas></div>
+          <div style="height:150px; position:relative;"><canvas id="weeklyPieChart"></canvas></div>
           <div id="weekly-stats-text" style="font-size:14px; font-weight:bold; margin-top:10px;"></div>
+        </div>
+        <div class="chart-box">
+          <h4 style="margin-top:0; font-size:15px; color:var(--seven-green);">全体進捗（全タスク）</h4>
+          <div style="height:150px; position:relative;"><canvas id="overallPieChart"></canvas></div>
+          <div id="overall-stats-text" style="font-size:14px; font-weight:bold; margin-top:10px;"></div>
         </div>
       </div>
     </div>
   </div>
 
   <div id="tab2" class="tab-content">
-    <div class="layout-split">
-      <div class="form-side">
-        <button class="btn" style="width:100%; font-size:17px; margin-bottom:20px;" onclick="window.print()">🖨️ A4サイズで印刷・PDF保存</button>
-        
-        <div class="input-panel">
-          <h2>📅 スケジュール（月曜起算）</h2>
-          <input type="date" id="base-date" onchange="updatePreview()">
-          <label style="font-size:14px; font-weight:bold; display:block; margin-top:15px;">セール期間</label>
-          <div id="sale-inputs"></div>
-          <button class="btn btn-sub" onclick="addSaleRow()">+ セール追加</button>
-          
-          <hr style="border-top:1px dashed #ccc; margin:15px 0;">
-          <label style="font-size:14px; font-weight:bold; display:block;">単発予定</label>
-          <div id="event-inputs"></div>
-          <button class="btn btn-sub" onclick="addEventRow()">+ 予定追加</button>
-        </div>
+    
+    <div class="input-panel btn-group" style="display:flex; gap:10px; flex-wrap:wrap; background:transparent; border:none; padding:0; box-shadow:none;">
+      <button class="btn" style="flex:1; min-width:140px; font-size:15px;" onclick="window.print()">🖨️ PDF印刷</button>
+      <button class="btn" style="flex:1; min-width:140px; font-size:15px; background:var(--seven-orange);" onclick="saveAsImage()">📸 画像に保存</button>
+    </div>
+    
+    <div class="input-panel">
+      <h2>📅 スケジュール（月曜起算）</h2>
+      <input type="date" id="base-date" onchange="updatePreview()">
+      <label style="font-size:14px; font-weight:bold; display:block; margin-top:10px;">セール期間</label>
+      <div id="sale-inputs"></div>
+      <button class="btn btn-sub" onclick="addSaleRow()">+ セール追加</button>
+      
+      <hr style="border-top:1px dashed #ccc; margin:15px 0;">
+      <label style="font-size:14px; font-weight:bold; display:block;">単発予定</label>
+      <div id="event-inputs"></div>
+      <button class="btn btn-sub" onclick="addEventRow()">+ 予定追加</button>
+    </div>
 
-        <div class="input-panel">
-          <h2>🎁 プライチ ＆ アプリ販促</h2>
-          <div id="plaichi-inputs"></div><button class="btn btn-sub" onclick="addPlaichiRow()">+ プライチ追加</button>
-          <div id="app-inputs" style="margin-top:15px;"></div><button class="btn btn-sub" onclick="addAppRow()">+ アプリ追加</button>
-        </div>
+    <div class="input-panel">
+      <h2>🎁 プライチ ＆ アプリ販促</h2>
+      <div id="plaichi-inputs"></div><button class="btn btn-sub" onclick="addPlaichiRow()">+ プライチ追加</button>
+      <div id="app-inputs" style="margin-top:15px;"></div><button class="btn btn-sub" onclick="addAppRow()">+ アプリ追加</button>
+    </div>
 
-        <div class="input-panel">
-          <h2>🎯 重点商品</h2>
-          <div id="focus-inputs"></div><button class="btn btn-sub" onclick="addFocusRow()">+ 商品追加</button>
-        </div>
+    <div class="input-panel">
+      <h2>🎯 重点商品</h2>
+      <div id="focus-inputs"></div><button class="btn btn-sub" onclick="addFocusRow()">+ 商品追加</button>
+    </div>
 
-        <div class="input-panel">
-          <h2>📦 特別発注（金曜11時締切）</h2>
-          <div id="special-inputs"></div><button class="btn btn-sub" onclick="addSpecialRow()">+ 特発追加</button>
-        </div>
+    <div class="input-panel">
+      <h2>📦 特別発注（金曜11時締切）</h2>
+      <div id="special-inputs"></div><button class="btn btn-sub" onclick="addSpecialRow()">+ 特発追加</button>
+    </div>
 
-        <div class="input-panel">
-          <h2>📝 特記事項</h2>
-          <textarea id="memo-input" rows="3" oninput="updatePreview()" placeholder="全体へのメッセージ..."></textarea>
-        </div>
-      </div>
+    <div class="input-panel">
+      <h2>📝 特記事項</h2>
+      <textarea id="memo-input" rows="3" oninput="updatePreview()" placeholder="全体へのメッセージ..."></textarea>
+    </div>
 
-      <div class="preview-side">
-        <div id="print-area" class="a4-paper">
-          <div class="a4-title">販促スケジュール＆重点商品案内</div>
-          <div class="a4-period" id="display-period"></div>
-          <div class="section-h"><span>スケジュール</span><span style="font-size:9px; color:var(--seven-red);">※金曜11時は特別発注締切</span></div>
-          <div id="cal-container"></div>
-          <div class="section-h" id="promo-header">プライチ ＆ アプリ販促</div>
-          <div id="promo-container"></div>
-          <div class="section-h" id="focus-header">重点商品</div>
-          <div id="focus-container"></div>
-          <div class="section-h" id="special-header">特別発注</div>
-          <div id="special-container"></div>
-          <div class="section-h">特記事項・指示事項</div>
-          <div id="memo-output" class="memo-box"></div>
-        </div>
+    <h2 style="font-size:17px; margin-top:30px; margin-bottom:5px;">📋 印刷プレビュー</h2>
+    <p style="font-size:12px; color:#666; margin-bottom:10px;">※枠内を横にスクロールして全体を確認できます。</p>
+    
+    <div class="preview-container" id="capture-wrapper">
+      <div id="print-area" class="a4-paper">
+        <div class="a4-title">販促スケジュール＆重点商品案内</div>
+        <div class="a4-period" id="display-period"></div>
+        <div class="section-h"><span>スケジュール</span><span style="font-size:9px; color:var(--seven-red);">※金曜11時は特別発注締切</span></div>
+        <div id="cal-container"></div>
+        <div class="section-h" id="promo-header">プライチ ＆ アプリ販促</div>
+        <div id="promo-container"></div>
+        <div class="section-h" id="focus-header">重点商品</div>
+        <div id="focus-container"></div>
+        <div class="section-h" id="special-header">特別発注</div>
+        <div id="special-container"></div>
+        <div class="section-h">特記事項・指示事項</div>
+        <div id="memo-output" class="memo-box"></div>
       </div>
     </div>
+
   </div>
 
   <div id="tab3" class="tab-content">
@@ -247,13 +277,13 @@ C店</textarea>
       
       <div id="report-store-list">
         </div>
-      <button class="btn" style="width:100%; font-size:17px; margin-top:20px; box-shadow:0 4px 6px rgba(0,136,90,0.2);" onclick="generateReport()">テキストを自動生成 ➡</button>
+      <button class="btn" style="width:100%; margin-top:20px;" onclick="generateReport()">テキストを自動生成 ➡</button>
     </div>
     
     <div class="input-panel" style="background:#e2e8f0; border-color:#cbd5e1;">
       <h2>📋 生成された報告文</h2>
-      <textarea id="report-output" rows="12" style="background:white;" placeholder="ここに生成されます..."></textarea>
-      <button class="btn" style="background:#475569; width:100%; font-size:16px;" onclick="copyText('report-output')">📝 全文をコピーする</button>
+      <textarea id="report-output" rows="12" style="background:white;"></textarea>
+      <button class="btn" style="background:#475569; width:100%;" onclick="copyText('report-output')">📝 全文をコピーする</button>
     </div>
   </div>
 
@@ -294,13 +324,13 @@ C店</textarea>
         <textarea id="dr-memos" rows="4" placeholder="・新商品の展開を確認&#10;・明日はA店へ巡回予定"></textarea>
       </div>
 
-      <button class="btn" style="width:100%; font-size:17px; margin-top:25px; box-shadow:0 4px 10px rgba(0,136,90,0.3);" onclick="generateOfficialReport()">✨ 日報用テキストを自動作成 ➡</button>
+      <button class="btn" style="width:100%; margin-top:25px;" onclick="generateOfficialReport()">✨ 日報用テキストを自動作成 ➡</button>
     </div>
 
     <div class="input-panel" style="background:#e2e8f0; border-color:#cbd5e1;">
       <h2>📋 完成した日報下書き</h2>
-      <textarea id="dr-final-output" rows="15" style="background:white;" placeholder="ここに完成した文章が出力されます..."></textarea>
-      <button class="btn" style="background:#475569; width:100%; font-size:16px;" onclick="copyText('dr-final-output')">📝 全文をコピーする</button>
+      <textarea id="dr-final-output" rows="15" style="background:white;"></textarea>
+      <button class="btn" style="background:#475569; width:100%;" onclick="copyText('dr-final-output')">📝 全文をコピーする</button>
     </div>
   </div>
 
@@ -315,18 +345,17 @@ C店</textarea>
   let photoDataArray = [];
   let dailyPieChart = null;
   let weeklyPieChart = null;
+  let overallPieChart = null;
   let autoDeleteDays = "never";
 
   window.onload = () => {
-    // データ読み込み
-    const savedStores = localStorage.getItem('ofc_stores_final');
+    const savedStores = localStorage.getItem('ofc_stores_perf');
     if (savedStores) document.getElementById('setting-stores').value = savedStores;
-    const savedAutoDel = localStorage.getItem('ofc_autodel_final');
+    const savedAutoDel = localStorage.getItem('ofc_autodel_perf');
     if (savedAutoDel) document.getElementById('setting-autodelete').value = savedAutoDel;
-    const savedTasks = localStorage.getItem('ofc_tasks_final');
+    const savedTasks = localStorage.getItem('ofc_tasks_perf');
     if (savedTasks) tasks = JSON.parse(savedTasks);
 
-    // デフォルト日付セット
     const today = new Date();
     document.getElementById('base-date').value = formatDate(today);
     document.getElementById('todo-deadline').value = formatDate(today);
@@ -338,7 +367,7 @@ C店</textarea>
     for(let i=0; i<3; i++) { addFocusRow(); addSpecialRow(); }
 
     initCharts();
-    saveSettings(true); // 全ツールに設定を反映してレンダリング
+    saveSettings(true); 
   };
 
   function switchTab(tabId) {
@@ -355,7 +384,7 @@ C店</textarea>
     if(!text.value) return;
     text.select();
     document.execCommand('copy');
-    alert("コピーしました！");
+    alert("テキストをコピーしました！");
   }
 
   function formatDate(d) { return d.toISOString().split('T')[0]; }
@@ -368,15 +397,14 @@ C店</textarea>
     assignedStores = rawText.split('\n').map(s => s.trim()).filter(s => s !== '');
     autoDeleteDays = document.getElementById('setting-autodelete').value;
 
-    localStorage.setItem('ofc_stores_final', rawText);
-    localStorage.setItem('ofc_autodel_final', autoDeleteDays);
+    localStorage.setItem('ofc_stores_perf', rawText);
+    localStorage.setItem('ofc_autodel_perf', autoDeleteDays);
 
-    // ① TODO店舗リスト更新
     let tOpts = '<option value="FC業務">🎯 FC業務</option>';
     assignedStores.forEach(s => tOpts += `<option value="${s}">🏪 ${s}</option>`);
     document.getElementById('todo-store-select').innerHTML = tOpts;
 
-    // ③ 報告リスト更新 (スマホ縦積みレイアウト対応)
+    // ③ スマホ縦型レイアウト
     const repContainer = document.getElementById('report-store-list');
     repContainer.innerHTML = '';
     assignedStores.forEach(s => {
@@ -391,7 +419,6 @@ C店</textarea>
       </div>`;
     });
 
-    // ④ 日報店舗チェックボックス更新
     const drContainer = document.getElementById('dr-stores-checkboxes');
     drContainer.innerHTML = '';
     assignedStores.forEach(s => {
@@ -408,9 +435,15 @@ C店</textarea>
   function addTask() {
     const text = document.getElementById('task-input').value;
     if(!text) return;
+    
+    // タスク分類の取得
+    const selectEl = document.getElementById('todo-category');
+    const category = selectEl.options[selectEl.selectedIndex].text;
+
     tasks.push({
       id: Date.now(),
       text: text,
+      category: category,
       target: document.getElementById('todo-store-select').value,
       deadline: document.getElementById('todo-deadline').value,
       priority: document.getElementById('todo-priority').checked,
@@ -446,15 +479,21 @@ C店</textarea>
       col.innerHTML = '';
       tasks.filter(t => t.status === status).forEach(t => {
         const isOverdue = t.deadline && t.deadline < todayStr && status !== 'done';
+        const catBadge = t.category ? `<span class="task-category-badge">${t.category}</span>` : '';
+        
         col.innerHTML += `
           <div class="task-card ${t.priority ? 'high-priority' : ''}">
+            ${catBadge}
             <div class="task-title">${t.text}</div>
-            <div class="task-meta">${t.target}<br><span class="deadline-badge ${isOverdue ? 'deadline-alert' : ''}">📅 ${t.deadline || '未定'}</span></div>
+            <div class="task-meta">
+              <span>${t.target}</span>
+              <span class="deadline-badge ${isOverdue ? 'deadline-alert' : ''}">📅 ${t.deadline || '未定'}</span>
+            </div>
             <div class="task-actions">
-              ${status === 'todo' ? `<button style="background:var(--seven-green); color:white;" onclick="updateTaskStatus(${t.id}, 'doing')">対応中➡</button>` : ''}
-              ${status === 'doing' ? `<button onclick="updateTaskStatus(${t.id}, 'todo')">⬅戻す</button><button style="background:var(--seven-green); color:white;" onclick="updateTaskStatus(${t.id}, 'done')">完了➡</button>` : ''}
-              ${status === 'done' ? `<button onclick="updateTaskStatus(${t.id}, 'doing')">⬅戻す</button>` : ''}
-              <button class="del-btn" onclick="deleteTask(${t.id})">消去</button>
+              ${status === 'todo' ? `<button style="background:var(--seven-green); color:white;" onclick="updateTaskStatus(${t.id}, 'doing')">対応中 ➡</button>` : ''}
+              ${status === 'doing' ? `<button onclick="updateTaskStatus(${t.id}, 'todo')">⬅ 戻す</button><button style="background:var(--seven-green); color:white;" onclick="updateTaskStatus(${t.id}, 'done')">完了 ➡</button>` : ''}
+              ${status === 'done' ? `<button onclick="updateTaskStatus(${t.id}, 'doing')">⬅ 戻す</button>` : ''}
+              <button class="del-btn" style="padding:6px 10px;" onclick="deleteTask(${t.id})">消去</button>
             </div>
           </div>
         `;
@@ -470,18 +509,19 @@ C店</textarea>
     saveTasks(); renderTasks();
   }
   function deleteTask(id) { tasks = tasks.filter(t => t.id !== id); saveTasks(); renderTasks(); }
-  function saveTasks() { localStorage.setItem('ofc_tasks_final', JSON.stringify(tasks)); }
+  function saveTasks() { localStorage.setItem('ofc_tasks_perf', JSON.stringify(tasks)); }
 
-  // グラフ処理
+  // グラフ処理 (全体進捗追加)
   function initCharts() {
-    const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '55%' };
-    const dFunc = () => ({ labels: ['未', '対応中', '完了'], datasets: [{ data: [0,0,0], backgroundColor: ['#cbd5e1', '#f38200', '#00885a'], borderWidth:0 }] });
+    const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: {font:{size:11}} } }, cutout: '55%' };
+    const dFunc = () => ({ labels: ['未着手', '対応中', '完了'], datasets: [{ data: [0,0,0], backgroundColor: ['#cbd5e1', '#f38200', '#00885a'], borderWidth:0 }] });
     dailyPieChart = new Chart(document.getElementById('dailyPieChart'), { type: 'doughnut', data: dFunc(), options: opts });
     weeklyPieChart = new Chart(document.getElementById('weeklyPieChart'), { type: 'doughnut', data: dFunc(), options: opts });
+    overallPieChart = new Chart(document.getElementById('overallPieChart'), { type: 'doughnut', data: dFunc(), options: opts });
   }
 
   function updateCharts() {
-    if(!dailyPieChart || !weeklyPieChart) return;
+    if(!dailyPieChart || !weeklyPieChart || !overallPieChart) return;
     const now = new Date(); const todayStr = formatDate(now);
     const dayOfWeek = now.getDay(); const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     const monday = new Date(now); monday.setDate(now.getDate() + diffToMon);
@@ -495,26 +535,33 @@ C店</textarea>
       const tot = todo+doing+done; return {todo, doing, done, tot, rate: tot>0 ? Math.round((done/tot)*100) : 0};
     };
 
+    // 本日
     const dTasks = tasks.filter(t => t.deadline === todayStr || (t.completedAt && t.completedAt.startsWith(todayStr)));
     const dSt = calc(dTasks);
     dailyPieChart.data.datasets[0].data = [dSt.todo, dSt.doing, dSt.done]; dailyPieChart.update();
     document.getElementById('daily-stats-text').innerHTML = `全 ${dSt.tot}件 / 完了 ${dSt.done}件 <br><span style="color:var(--seven-green); font-size:16px;">達成率 ${dSt.rate}%</span>`;
 
+    // 今週
     const wTasks = tasks.filter(t => (t.deadline >= monStr && t.deadline <= friStr) || (t.completedAt && t.completedAt.slice(0,10) >= monStr && t.completedAt.slice(0,10) <= friStr));
     const wSt = calc(wTasks);
     weeklyPieChart.data.datasets[0].data = [wSt.todo, wSt.doing, wSt.done]; weeklyPieChart.update();
     document.getElementById('weekly-stats-text').innerHTML = `全 ${wSt.tot}件 / 完了 ${wSt.done}件 <br><span style="color:var(--seven-green); font-size:16px;">達成率 ${wSt.rate}%</span>`;
+
+    // 全体
+    const oSt = calc(tasks);
+    overallPieChart.data.datasets[0].data = [oSt.todo, oSt.doing, oSt.done]; overallPieChart.update();
+    document.getElementById('overall-stats-text').innerHTML = `全 ${oSt.tot}件 / 完了 ${oSt.done}件 <br><span style="color:var(--seven-green); font-size:16px;">達成率 ${oSt.rate}%</span>`;
   }
 
   // ==========================================
-  // ② 店舗案内作成ツール
+  // ② 店舗案内作成ツール (画像保存機能追加)
   // ==========================================
-  function createDelBtn() { return `<button class="del-btn" onclick="this.parentElement.remove(); updatePreview();">✕</button>`; }
-  function addSaleRow() { document.getElementById('sale-inputs').innerHTML += `<div class="row"><input type="date" class="s-start" onchange="updatePreview()" style="flex:1;"><span style="font-size:10px;">〜</span><input type="date" class="s-end" onchange="updatePreview()" style="flex:1;"><input type="text" class="s-name" placeholder="セール名" oninput="updatePreview()" style="flex:1.5;">${createDelBtn()}</div>`; }
+  function createDelBtn() { return `<button class="del-btn" style="padding:10px; font-size:14px;" onclick="this.parentElement.remove(); updatePreview();">✕</button>`; }
+  function addSaleRow() { document.getElementById('sale-inputs').innerHTML += `<div class="row"><input type="date" class="s-start" onchange="updatePreview()" style="flex:1;"><span style="font-size:12px;">〜</span><input type="date" class="s-end" onchange="updatePreview()" style="flex:1;"><input type="text" class="s-name" placeholder="セール名" oninput="updatePreview()" style="flex:1.5;">${createDelBtn()}</div>`; }
   function addEventRow() { document.getElementById('event-inputs').innerHTML += `<div class="row"><input type="date" class="e-date" onchange="updatePreview()" style="flex:1;"><input type="text" class="e-name" placeholder="内容" oninput="updatePreview()" style="flex:2;">${createDelBtn()}</div>`; }
-  function addPlaichiRow() { document.getElementById('plaichi-inputs').innerHTML += `<div class="row"><input type="text" class="pl-p" placeholder="期間" oninput="updatePreview()" style="flex:1;"><input type="text" class="pl-t" placeholder="〇〇を買うと" oninput="updatePreview()" style="flex:1.5;"><input type="text" class="pl-r" placeholder="無料券" oninput="updatePreview()" style="flex:1.5;">${createDelBtn()}</div>`; }
+  function addPlaichiRow() { document.getElementById('plaichi-inputs').innerHTML += `<div class="row"><input type="text" class="pl-p" placeholder="期間" oninput="updatePreview()" style="flex:1;"><input type="text" class="pl-t" placeholder="買うと" oninput="updatePreview()" style="flex:1.5;"><input type="text" class="pl-r" placeholder="無料" oninput="updatePreview()" style="flex:1.5;">${createDelBtn()}</div>`; }
   function addAppRow() { document.getElementById('app-inputs').innerHTML += `<div class="row"><input type="text" class="ap-p" placeholder="期間" oninput="updatePreview()" style="flex:1;"><input type="text" class="ap-d" placeholder="内容" oninput="updatePreview()" style="flex:3;">${createDelBtn()}</div>`; }
-  function addFocusRow() { document.getElementById('focus-inputs').innerHTML += `<div class="row"><input type="text" class="f-n" placeholder="商品名" oninput="updatePreview()" style="flex:2;"><input type="text" class="f-c" placeholder="コード" maxlength="6" oninput="updatePreview()" style="flex:1;"><input type="number" class="f-m" placeholder="荒利(%)" oninput="updatePreview()" style="flex:1;"><input type="number" class="f-t" placeholder="目標数" oninput="updatePreview()" style="flex:1;">${createDelBtn()}</div>`; }
+  function addFocusRow() { document.getElementById('focus-inputs').innerHTML += `<div class="row"><input type="text" class="f-n" placeholder="商品名" oninput="updatePreview()" style="flex:2;"><input type="text" class="f-c" placeholder="コード" maxlength="6" oninput="updatePreview()" style="flex:1;"><input type="number" class="f-m" placeholder="荒利(%)" oninput="updatePreview()" style="flex:1;"><input type="number" class="f-t" placeholder="目標" oninput="updatePreview()" style="flex:1;">${createDelBtn()}</div>`; }
   function addSpecialRow() { document.getElementById('special-inputs').innerHTML += `<div class="row"><select class="sp-s" onchange="updatePreview()" style="flex:0.8;"><option value="1">★☆☆</option><option value="2">★★☆</option><option value="3">★★★</option></select><input type="text" class="sp-n" placeholder="商品名" oninput="updatePreview()" style="flex:1.5;"><input type="text" class="sp-nt" placeholder="追記" oninput="updatePreview()" style="flex:2;">${createDelBtn()}</div>`; }
 
   function updatePreview() {
@@ -587,6 +634,22 @@ C店</textarea>
     document.getElementById('memo-output').innerText = document.getElementById('memo-input').value;
   }
 
+  // 画像として保存 (html2canvas)
+  function saveAsImage() {
+    const printArea = document.getElementById('print-area');
+    // 解像度を上げて綺麗に書き出す (scale: 2)
+    html2canvas(printArea, { scale: 2, useCORS: true }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `販促案内_${document.getElementById('base-date').value}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      alert("画像をダウンロードしました！スマホの写真アプリ等に保存されます。");
+    }).catch(err => {
+      alert("画像の生成に失敗しました。");
+      console.error(err);
+    });
+  }
+
   // ==========================================
   // ③ 上長への報告ツール
   // ==========================================
@@ -629,7 +692,7 @@ C店</textarea>
   function renderPhotoGrid() {
     const c = document.getElementById('photo-preview-container'); c.innerHTML = '';
     photoDataArray.forEach(p => {
-      c.innerHTML += `<div class="photo-card"><img src="${p.url}"><input type="text" placeholder="メモ入力" oninput="photoDataArray.find(x=>x.id===${p.id}).caption=this.value"><button class="del-btn" style="padding:8px 12px; font-size:12px; width:100%;" onclick="photoDataArray=photoDataArray.filter(x=>x.id!==${p.id}); renderPhotoGrid();">削除</button></div>`;
+      c.innerHTML += `<div class="photo-card"><img src="${p.url}"><input type="text" placeholder="メモ入力" style="padding:8px; font-size:14px;" oninput="photoDataArray.find(x=>x.id===${p.id}).caption=this.value"><button class="del-btn" style="padding:8px; font-size:13px; width:100%;" onclick="photoDataArray=photoDataArray.filter(x=>x.id!==${p.id}); renderPhotoGrid();">削除</button></div>`;
     });
   }
   
