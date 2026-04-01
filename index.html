@@ -143,7 +143,7 @@ C店</textarea>
         <option value="7">完了から 1週間後 に消去</option>
       </select>
       
-      <button class="btn" style="width:100%; margin-top:20px;" onclick="saveSettings()">設定を保存して反映する</button>
+      <button class="btn" style="width:100%; margin-top:20px; font-size:17px;" onclick="saveSettings()">設定を保存して反映する</button>
     </div>
   </div>
 
@@ -324,13 +324,13 @@ C店</textarea>
         <textarea id="dr-memos" rows="4" placeholder="・新商品の展開を確認&#10;・明日はA店へ巡回予定"></textarea>
       </div>
 
-      <button class="btn" style="width:100%; margin-top:25px;" onclick="generateOfficialReport()">✨ 日報用テキストを自動作成 ➡</button>
+      <button class="btn" style="width:100%; font-size:17px; margin-top:25px; box-shadow:0 4px 10px rgba(0,136,90,0.3);" onclick="generateOfficialReport()">✨ 日報用テキストを自動作成 ➡</button>
     </div>
 
     <div class="input-panel" style="background:#e2e8f0; border-color:#cbd5e1;">
       <h2>📋 完成した日報下書き</h2>
       <textarea id="dr-final-output" rows="15" style="background:white;"></textarea>
-      <button class="btn" style="background:#475569; width:100%;" onclick="copyText('dr-final-output')">📝 全文をコピーする</button>
+      <button class="btn" style="background:#475569; width:100%; font-size:16px;" onclick="copyText('dr-final-output')">📝 全文をコピーする</button>
     </div>
   </div>
 
@@ -400,7 +400,8 @@ C店</textarea>
     localStorage.setItem('ofc_stores_perf', rawText);
     localStorage.setItem('ofc_autodel_perf', autoDeleteDays);
 
-    let tOpts = '<option value="FC業務">🎯 FC業務</option>';
+    // ① TODO店舗リスト更新 (FC業務を削除)
+    let tOpts = '';
     assignedStores.forEach(s => tOpts += `<option value="${s}">🏪 ${s}</option>`);
     document.getElementById('todo-store-select').innerHTML = tOpts;
 
