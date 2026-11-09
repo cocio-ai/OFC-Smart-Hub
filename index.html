@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>OFC Smart Hub - Modern Edition</title>
+<title>OFC Smart Hub - Modern Edition (完全版)</title>
 <!-- フォント＆モダンアイコン -->
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
@@ -98,7 +98,7 @@
     border: 1px solid var(--border); 
     border-radius: var(--radius-sm); 
     padding: 12px 16px; 
-    font-size: 16px; /* スマホズーム防止 */
+    font-size: 16px !important; /* スマホズーム防止 */
     font-family: inherit; color: var(--text-main);
     transition: all 0.2s; margin-bottom: 12px;
   }
@@ -224,14 +224,6 @@
     <h2 class="card-title"><span class="material-symbols-rounded text-primary">settings</span>システム初期設定</h2>
     <label class="mb-2" style="display:block; font-size:14px; font-weight:700;">担当店舗（改行区切り）</label>
     <textarea id="setting-stores" rows="6">尾張旭晴丘町池上店&#10;A店&#10;B店</textarea>
-    
-    <label class="mt-4 mb-2" style="display:block; font-size:14px; font-weight:700;">完了タスクの自動消去設定</label>
-    <select id="setting-autodelete">
-      <option value="never">手動で消去するまで残す</option>
-      <option value="1">完了から 1日後 に自動消去</option>
-      <option value="3">完了から 3日後 に自動消去</option>
-      <option value="7">完了から 1週間後 に自動消去</option>
-    </select>
     
     <button class="btn mt-4" onclick="saveSettings()">設定を保存して反映</button>
   </div>
@@ -412,19 +404,33 @@
 </div>
 
 <script>
-  let assignedStores = [], tasks = [], genPhotos = [];
+  // 共通変数
+  let assignedStores = [];
+  let tasks = [];
+  let genPhotos = [];
   let dailyPieChart, weeklyPieChart, overallPieChart;
 
+  // 初期化処理
   window.onload = () => {
-    const sS = localStorage.getItem('ofc_s_modern'); if(sS) document.getElementById('setting-stores').value = sS;
-    const sT = localStorage.getItem('ofc_t_modern'); if(sT) tasks = JSON.parse(sT);
+    const sS = localStorage.getItem('ofc_s_modern_full'); 
+    if(sS) document.getElementById('setting-stores').value = sS;
+    
+    const sT = localStorage.getItem('ofc_t_modern_full'); 
+    if(sT) tasks = JSON.parse(sT);
+    
     const t = new Date();
     document.getElementById('base-date').value = fmtD(t);
     document.getElementById('todo-deadline').value = fmtD(t);
     
-    // 初期UIセット
-    for(let i=0; i<2; i++) { addSaleRow(); addEventRow(); addFocusRow(); }
-    initCharts(); saveSettings(true);
+    // 入力枠の初期セット
+    for(let i=0; i<2; i++) { addSaleRow(); }
+    addEventRow();
+    addPlaichiRow();
+    addAppRow();
+    for(let i=0; i<2; i++) { addFocusRow(); addSpecialRow(); }
+    
+    initCharts(); 
+    saveSettings(true);
   };
 
   function switchTab(id) {
@@ -433,45 +439,75 @@
     document.getElementById(id).classList.add('active'); 
     event.currentTarget.classList.add('active');
     window.scrollTo({top:0, behavior:'smooth'});
+    
     if(id==='tab1') updCharts(); 
     if(id==='tab2') updatePreview();
   }
 
   function fmtD(d) { return d.toISOString().split('T')[0]; }
 
+  // --- ⚙️ 設定タブ ---
   function saveSettings(init=false) {
     const raw = document.getElementById('setting-stores').value; 
     assignedStores = raw.split('\n').map(s=>s.trim()).filter(s=>s);
-    localStorage.setItem('ofc_s_modern', raw);
+    localStorage.setItem('ofc_s_modern_full', raw);
     
-    let tO = ''; assignedStores.forEach(s=>tO+=`<option value="${s}">${s}</option>`); 
+    // ① TODO店舗リスト更新
+    let tO = ''; 
+    assignedStores.forEach(s=>tO+=`<option value="${s}">${s}</option>`); 
     document.getElementById('todo-store-select').innerHTML = tO;
     
-    const rL = document.getElementById('report-store-list'); rL.innerHTML = '';
-    assignedStores.forEach(s=>rL.innerHTML+=`
+    // ③ 報告タブリスト更新
+    const rL = document.getElementById('report-store-list'); 
+    rL.innerHTML = '';
+    assignedStores.forEach(s=> {
+      rL.innerHTML+=`
       <div class="excel-row" style="background:var(--surface);">
         <span style="width:auto; color:var(--primary);"><span class="material-symbols-rounded" style="font-size:18px;">store</span></span>
         <input type="text" class="r-name" value="${s}" readonly style="flex:1; background:transparent; font-weight:700;">
         <input type="number" class="r-qty" placeholder="個数" style="width:70px; text-align:right;">
         <input type="number" class="r-amt" placeholder="金額(円)" style="width:100px; text-align:right;">
-      </div>`);
+      </div>`;
+    });
       
-    const dC = document.getElementById('dr-stores-checkboxes'); dC.innerHTML = '';
-    assignedStores.forEach(s=>dC.innerHTML+=`<label class="checkbox-chip"><input type="checkbox" class="dr-store-chk" value="${s}"> ${s}</label>`);
+    // ④ 日報店舗チェックボックス更新
+    const dC = document.getElementById('dr-stores-checkboxes'); 
+    dC.innerHTML = '';
+    assignedStores.forEach(s=>{
+      dC.innerHTML+=`<label class="checkbox-chip"><input type="checkbox" class="dr-store-chk" value="${s}"> ${s}</label>`;
+    });
     
     renderTasks(); 
     if(!init) { alert("設定を保存しました"); switchTab('tab1'); }
   }
 
-  /* --- ① TODO機能 --- */
+  // --- ① TODO機能 ---
   function addTask() {
-    const txt = document.getElementById('task-input').value; if(!txt) return;
-    tasks.push({id:Date.now(), text:txt, category:document.getElementById('todo-category').value, target:document.getElementById('todo-store-select').value, deadline:document.getElementById('todo-deadline').value, priority:document.getElementById('todo-priority').checked, status:'todo', completedAt:null});
-    saveT(); renderTasks(); document.getElementById('task-input').value='';
+    const txt = document.getElementById('task-input').value; 
+    if(!txt) return;
+    
+    tasks.push({
+      id: Date.now(), 
+      text: txt, 
+      category: document.getElementById('todo-category').value, 
+      target: document.getElementById('todo-store-select').value, 
+      deadline: document.getElementById('todo-deadline').value, 
+      priority: document.getElementById('todo-priority').checked, 
+      status: 'todo', 
+      completedAt: null
+    });
+    
+    saveT(); 
+    renderTasks(); 
+    document.getElementById('task-input').value = '';
+    document.getElementById('todo-priority').checked = false;
   }
+
   function renderTasks() {
     ['todo','doing','done'].forEach(st => {
-      const col = document.getElementById(`list-${st}`); col.innerHTML = '';
+      const col = document.getElementById(`list-${st}`); 
+      col.innerHTML = '';
+      
       tasks.filter(t=>t.status===st).sort((a,b)=>b.priority-a.priority).forEach(t => {
         col.innerHTML += `
         <div class="task-card ${t.priority?'priority':''}">
@@ -482,7 +518,9 @@
             <span class="deadline-badge">${t.deadline||'未定'}</span>
           </div>
           <div class="task-actions">
-            ${st!=='done'?`<button onclick="updTS(${t.id},'${st==='todo'?'doing':'done'}')">次へ進める</button>`:''}
+            ${st==='todo'?`<button onclick="updTS(${t.id},'doing')">対応中へ</button>`:''}
+            ${st==='doing'?`<button onclick="updTS(${t.id},'todo')">戻す</button><button class="done-btn" onclick="updTS(${t.id},'done')">完了</button>`:''}
+            ${st==='done'?`<button onclick="updTS(${t.id},'doing')">戻す</button>`:''}
             <button onclick="delT(${t.id})" style="color:var(--danger);">削除</button>
           </div>
         </div>`;
@@ -490,35 +528,80 @@
     });
     updCharts();
   }
-  function updTS(id,s) { const t=tasks.find(x=>x.id===id); t.status=s; t.completedAt=s==='done'?new Date().toISOString():null; saveT(); renderTasks(); }
-  function delT(id) { tasks=tasks.filter(x=>x.id!==id); saveT(); renderTasks(); }
-  function saveT() { localStorage.setItem('ofc_t_modern', JSON.stringify(tasks)); }
+
+  function updTS(id,s) { 
+    const t = tasks.find(x=>x.id===id); 
+    t.status = s; 
+    t.completedAt = (s==='done') ? new Date().toISOString() : null; 
+    saveT(); 
+    renderTasks(); 
+  }
+
+  function delT(id) { 
+    tasks = tasks.filter(x=>x.id!==id); 
+    saveT(); 
+    renderTasks(); 
+  }
+
+  function saveT() { 
+    localStorage.setItem('ofc_t_modern_full', JSON.stringify(tasks)); 
+  }
 
   function initCharts() {
     Chart.defaults.color = '#6b7280';
     Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
-    const cfg = () => ({ type:'doughnut', data:{ labels:['未着手','対応中','完了'], datasets:[{data:[0,0,0], backgroundColor:['#e5e7eb','#f38200','#00885a'], borderWidth:0}] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, cutout:'70%' } });
+    const cfg = () => ({ 
+      type:'doughnut', 
+      data:{ labels:['未着手','対応中','完了'], datasets:[{data:[0,0,0], backgroundColor:['#e5e7eb','#f38200','#00885a'], borderWidth:0}] }, 
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, cutout:'70%' } 
+    });
     dailyPieChart = new Chart(document.getElementById('dailyPieChart'), cfg());
     weeklyPieChart = new Chart(document.getElementById('weeklyPieChart'), cfg());
     overallPieChart = new Chart(document.getElementById('overallPieChart'), cfg());
   }
+
   function updCharts() {
     if(!dailyPieChart) return;
     const now = new Date(), tS = fmtD(now);
+    
+    // 今週の判定用
+    const d = now.getDay(); 
+    const mon = new Date(now); mon.setDate(now.getDate() - d + (d===0?-6:1));
+    const fri = new Date(mon); fri.setDate(mon.getDate() + 4);
+    const monS = fmtD(mon), friS = fmtD(fri);
+
     const calc = (arr) => {
-      const d = arr.filter(x=>x.status==='done').length, t = arr.length;
-      return {d, t, r: t?Math.round(d/t*100):0, data:[arr.filter(x=>x.status==='todo').length, arr.filter(x=>x.status==='doing').length, d]};
+      const done = arr.filter(x=>x.status==='done').length;
+      const total = arr.length;
+      return {
+        done, total, 
+        rate: total ? Math.round(done/total*100) : 0, 
+        data: [arr.filter(x=>x.status==='todo').length, arr.filter(x=>x.status==='doing').length, done]
+      };
     };
+
     const dR = calc(tasks.filter(x=>x.deadline===tS || (x.completedAt && x.completedAt.startsWith(tS))));
     dailyPieChart.data.datasets[0].data = dR.data; dailyPieChart.update();
-    document.getElementById('daily-stats-text').innerHTML = `${dR.r}%<br><span style="font-size:11px; font-weight:normal;">${dR.d}/${dR.t}件</span>`;
-    const oR = calc(tasks); overallPieChart.data.datasets[0].data = oR.data; overallPieChart.update();
-    document.getElementById('overall-stats-text').innerHTML = `${oR.r}%<br><span style="font-size:11px; font-weight:normal;">${oR.d}/${oR.t}件</span>`;
+    document.getElementById('daily-stats-text').innerHTML = `${dR.rate}%<br><span style="font-size:11px; font-weight:normal;">${dR.done}/${dR.total}件</span>`;
+    
+    const wR = calc(tasks.filter(x=>(x.deadline>=monS && x.deadline<=friS) || (x.completedAt && x.completedAt.slice(0,10)>=monS && x.completedAt.slice(0,10)<=friS)));
+    weeklyPieChart.data.datasets[0].data = wR.data; weeklyPieChart.update();
+    document.getElementById('weekly-stats-text').innerHTML = `${wR.rate}%<br><span style="font-size:11px; font-weight:normal;">${wR.done}/${wR.total}件</span>`;
+
+    const oR = calc(tasks); 
+    overallPieChart.data.datasets[0].data = oR.data; overallPieChart.update();
+    document.getElementById('overall-stats-text').innerHTML = `${oR.rate}%<br><span style="font-size:11px; font-weight:normal;">${oR.done}/${oR.total}件</span>`;
   }
 
-  /* --- ② 案内作成機能 --- */
-  function crDelBtn() { return `<button class="del-row-btn" onclick="this.parentElement.remove(); updatePreview();"><span class="material-symbols-rounded">close</span></button>`; }
-  function addSaleRow() { document.getElementById('sale-inputs').innerHTML += `<div class="flex-row"><input type="date" class="s-s flex-1"><input type="date" class="s-e flex-1"><input type="text" class="s-n flex-1" placeholder="セール名" oninput="updatePreview()">${crDelBtn()}</div>`; }
+  // --- ② 案内作成機能 (完全版) ---
+  function crDelBtn() { 
+    return `<button class="del-row-btn" onclick="this.parentElement.remove(); updatePreview();"><span class="material-symbols-rounded">close</span></button>`; 
+  }
+  
+  function addSaleRow() { 
+    document.getElementById('sale-inputs').innerHTML += `<div class="flex-row"><input type="date" class="s-s flex-1" onchange="updatePreview()"><input type="date" class="s-e flex-1" onchange="updatePreview()"><input type="text" class="s-n flex-1" placeholder="セール名" oninput="updatePreview()">${crDelBtn()}</div>`; 
+  }
+  
   function addEventRow() {
     document.getElementById('event-inputs').innerHTML += `
       <div class="flex-row">
@@ -530,62 +613,181 @@
         ${crDelBtn()}
       </div>`;
   }
-  function addPlaichiRow() { document.getElementById('plaichi-inputs').innerHTML += `<div class="flex-row"><input type="text" class="pl-period flex-1" placeholder="期間"><input type="text" class="pl-target flex-1" placeholder="買うと"><input type="text" class="pl-reward flex-1" placeholder="無料">${crDelBtn()}</div>`; }
-  function addAppRow() { document.getElementById('app-inputs').innerHTML += `<div class="flex-row"><input type="text" class="ap-period flex-1" placeholder="期間"><input type="text" class="ap-detail flex-1" placeholder="内容" style="min-width:50%;">${crDelBtn()}</div>`; }
-  function addFocusRow() { document.getElementById('focus-inputs').innerHTML += `<div class="flex-row"><input type="text" class="f-name flex-1" placeholder="商品名" style="min-width:30%;"><input type="text" class="f-code flex-1" placeholder="コード"><input type="number" class="f-margin flex-1" placeholder="%"><input type="number" class="f-target flex-1" placeholder="個">${crDelBtn()}</div>`; }
-  function addSpecialRow() { document.getElementById('special-inputs').innerHTML += `<div class="flex-row"><select class="sp-star flex-1"><option value="1">★☆☆</option><option value="2">★★☆</option><option value="3">★★★</option></select><input type="text" class="sp-name flex-1" placeholder="商品名" style="min-width:30%;"><input type="text" class="sp-note flex-1" placeholder="追記">${crDelBtn()}</div>`; }
+  
+  function addPlaichiRow() { 
+    document.getElementById('plaichi-inputs').innerHTML += `<div class="flex-row"><input type="text" class="pl-period flex-1" placeholder="期間" oninput="updatePreview()"><input type="text" class="pl-target flex-1" placeholder="買うと" oninput="updatePreview()"><input type="text" class="pl-reward flex-1" placeholder="無料" oninput="updatePreview()">${crDelBtn()}</div>`; 
+  }
+  
+  function addAppRow() { 
+    document.getElementById('app-inputs').innerHTML += `<div class="flex-row"><input type="text" class="ap-period flex-1" placeholder="期間" oninput="updatePreview()"><input type="text" class="ap-detail flex-1" placeholder="内容" style="min-width:50%;" oninput="updatePreview()">${crDelBtn()}</div>`; 
+  }
+  
+  function addFocusRow() { 
+    document.getElementById('focus-inputs').innerHTML += `<div class="flex-row"><input type="text" class="f-name flex-1" placeholder="商品名" style="min-width:30%;" oninput="updatePreview()"><input type="text" class="f-code flex-1" placeholder="コード" oninput="updatePreview()"><input type="number" class="f-margin flex-1" placeholder="%" oninput="updatePreview()"><input type="number" class="f-target flex-1" placeholder="個" oninput="updatePreview()">${crDelBtn()}</div>`; 
+  }
+  
+  function addSpecialRow() { 
+    document.getElementById('special-inputs').innerHTML += `<div class="flex-row"><select class="sp-star flex-1" onchange="updatePreview()"><option value="1">★☆☆</option><option value="2">★★☆</option><option value="3">★★★</option></select><input type="text" class="sp-name flex-1" placeholder="商品名" style="min-width:30%;" oninput="updatePreview()"><input type="text" class="sp-note flex-1" placeholder="追記" oninput="updatePreview()">${crDelBtn()}</div>`; 
+  }
 
   function updatePreview() {
-    const b = new Date(document.getElementById('base-date').value); if(isNaN(b)) return;
-    const d = b.getDay(); const mon = new Date(b.setDate(b.getDate() - d + (d===0?-6:1)));
+    const b = new Date(document.getElementById('base-date').value); 
+    if(isNaN(b)) return;
+    
+    // カレンダーの期間計算
+    const d = b.getDay(); 
+    const mon = new Date(b.setDate(b.getDate() - d + (d===0?-6:1)));
     const sun2 = new Date(mon); sun2.setDate(mon.getDate()+13);
     document.getElementById('display-period').innerText = `${mon.getMonth()+1}/${mon.getDate()}(月) 〜 ${sun2.getMonth()+1}/${sun2.getDate()}(日)`;
     
+    // 1. カレンダー生成
     const sales = Array.from(document.querySelectorAll('#sale-inputs .flex-row')).map(r=>({s:r.querySelector('.s-s').value, e:r.querySelector('.s-e').value, n:r.querySelector('.s-n').value})).filter(x=>x.n);
     const events = Array.from(document.querySelectorAll('#event-inputs .flex-row')).map(r=>({d:r.querySelector('.e-date').value, w:r.querySelector('.e-day').value, n:r.querySelector('.e-name').value})).filter(x=>x.n);
 
-    let cal = '<table class="cal-grid"><tr>'; ['月','火','水','木','金','土','日'].forEach(w=>cal+=`<th>${w}</th>`); cal+='</tr>';
+    let cal = '<table class="cal-grid"><tr>'; 
+    ['月','火','水','木','金','土','日'].forEach(w=>cal+=`<th>${w}</th>`); 
+    cal+='</tr>';
+    
     for(let w=0; w<2; w++) {
       cal += '<tr>';
-      for(let d=0; d<7; d++) {
-        const cur = new Date(mon); cur.setDate(mon.getDate() + (w*7) + d); const cS = fmtD(cur);
+      for(let dayOffset=0; dayOffset<7; dayOffset++) {
+        const cur = new Date(mon); cur.setDate(mon.getDate() + (w*7) + dayOffset); 
+        const cS = fmtD(cur);
+        
         cal += `<td><span class="date-num">${cur.getMonth()+1}/${cur.getDate()}</span>`;
-        if(d===4) cal += `<span class="special-label">特発締切</span>`;
-        events.filter(e => e.d === cS || (e.w !== "none" && parseInt(e.w) === cur.getDay())).forEach(e => cal += `<div class="promo-bar single-event">${e.n}</div>`);
-        sales.filter(s => cS>=s.s && cS<=s.e).forEach(s => cal += `<div class="promo-bar">${s.n}</div>`);
+        if(dayOffset===4) cal += `<span class="special-label">特発締切</span>`; // 金曜の特発アラート
+        
+        // 曜日指定 ＆ 日付指定の単発イベント
+        events.filter(e => e.d === cS || (e.w !== "none" && parseInt(e.w) === cur.getDay())).forEach(e => {
+          cal += `<div class="promo-bar single-event">${e.n}</div>`;
+        });
+        
+        // セール期間のバー
+        sales.filter(s => cS>=s.s && cS<=s.e).forEach(s => {
+          cal += `<div class="promo-bar">${s.n}</div>`;
+        });
         cal += '</td>';
       }
       cal += '</tr>';
     }
     document.getElementById('cal-container').innerHTML = cal + '</table>';
     
-    // その他は略記ですが動作はします。
+    // 2. プライチ・アプリ生成
+    const pls = Array.from(document.querySelectorAll('#plaichi-inputs .flex-row')).map(r => ({p: r.querySelector('.pl-period').value, t: r.querySelector('.pl-target').value, rw: r.querySelector('.pl-reward').value})).filter(x => x.t);
+    const aps = Array.from(document.querySelectorAll('#app-inputs .flex-row')).map(r => ({p: r.querySelector('.ap-period').value, d: r.querySelector('.ap-detail').value})).filter(x => x.d);
+    
+    let pOut = '';
+    if(pls.length || aps.length) {
+      document.getElementById('promo-header').style.display = 'flex';
+      pOut += '<table class="info-table">';
+      pls.forEach(p => pOut += `<tr><th style="width:15%; background:#fff5f5; color:var(--danger);">プライチ</th><td style="width:20%;">${p.p}</td><td style="text-align:left;">【買】${p.t}</td><td style="text-align:left;">【貰】${p.rw}</td></tr>`);
+      aps.forEach(a => pOut += `<tr><th style="width:15%; background:#f0fdf4; color:var(--primary);">アプリ</th><td style="width:20%;">${a.p}</td><td colspan="2" style="text-align:left;">${a.d}</td></tr>`);
+      pOut += '</table>';
+    } else {
+      document.getElementById('promo-header').style.display = 'none';
+    }
+    document.getElementById('promo-container').innerHTML = pOut;
+
+    // 3. 重点商品生成
+    const fcs = Array.from(document.querySelectorAll('#focus-inputs .flex-row')).map(r => ({n: r.querySelector('.f-name').value, c: r.querySelector('.f-code').value, m: r.querySelector('.f-margin').value, t: r.querySelector('.f-target').value})).filter(x => x.n);
+    let fOut = '';
+    if(fcs.length) {
+      document.getElementById('focus-header').style.display = 'flex';
+      fOut += '<table class="info-table"><tr><th style="width:40%;">商品名</th><th>コード</th><th>荒利率</th><th>目標数</th><th style="width:15%;">実績(手書)</th></tr>';
+      fcs.forEach(f => fOut += `<tr><td style="text-align:left;">${f.n}</td><td>${f.c}</td><td>${f.m ? f.m+'%' : ''}</td><td>${f.t ? f.t+'個' : ''}</td><td></td></tr>`);
+      fOut += '</table>';
+    } else {
+      document.getElementById('focus-header').style.display = 'none';
+    }
+    document.getElementById('focus-container').innerHTML = fOut;
+
+    // 4. 特別発注生成
+    const sps = Array.from(document.querySelectorAll('#special-inputs .flex-row')).map(r => ({s: r.querySelector('.sp-star').value, n: r.querySelector('.sp-name').value, nt: r.querySelector('.sp-note').value})).filter(x => x.n);
+    let sOut = '';
+    if(sps.length) {
+      document.getElementById('special-header').style.display = 'flex';
+      sOut += '<table class="info-table"><tr><th style="width:10%;">重要度</th><th style="width:35%;">商品名</th><th>追記事項</th><th style="width:15%;">発注(手書)</th></tr>';
+      sps.forEach(s => {
+        let stars = s.s==="3" ? "★★★" : (s.s==="2" ? "★★☆" : "★☆☆");
+        let color = s.s==="3" ? "var(--danger)" : "#374151";
+        let weight = s.s==="3" ? "900" : "normal";
+        sOut += `<tr><td><span style="color:var(--danger); font-weight:bold;">${stars}</span></td><td style="text-align:left; color:${color}; font-weight:${weight};">${s.n}</td><td style="text-align:left;">${s.nt}</td><td></td></tr>`;
+      });
+      sOut += '</table>';
+    } else {
+      document.getElementById('special-header').style.display = 'none';
+    }
+    document.getElementById('special-container').innerHTML = sOut;
+    
+    // 5. 特記事項
     document.getElementById('memo-output').innerText = document.getElementById('memo-input').value;
   }
-  function saveAsImage() { html2canvas(document.getElementById('print-area'), {scale:2}).then(c=>{ const l=document.createElement('a'); l.download='案内.png'; l.href=c.toDataURL(); l.click(); }); }
+  
+  function saveAsImage() { 
+    html2canvas(document.getElementById('print-area'), {scale:2, useCORS:true}).then(c=>{ 
+      const l = document.createElement('a'); 
+      l.download = '販促案内.png'; 
+      l.href = c.toDataURL('image/png'); 
+      l.click(); 
+    }).catch(err => {
+      alert("画像の保存に失敗しました。");
+    }); 
+  }
 
-  /* --- ③ 報告 --- */
+  // --- ③ 上長報告ツール ---
   function generateReport() {
     let out = "【店舗別実績】\n", tQ=0, tA=0, cnt=0;
     document.querySelectorAll('.report-row, .excel-row:has(.r-name)').forEach(r=>{
-      const n=r.querySelector('.r-name').value, q=r.querySelector('.r-qty').value, a=r.querySelector('.r-amt').value;
-      if(q||a){ out+=`・${n}：${q||0}個 (${(parseInt(a)||0).toLocaleString()}円)\n`; tQ+=parseInt(q)||0; tA+=parseInt(a)||0; cnt++; }
+      const n = r.querySelector('.r-name').value;
+      const q = r.querySelector('.r-qty').value;
+      const a = r.querySelector('.r-amt').value;
+      
+      if(q || a) { 
+        out += `・${n}：${q||0}個 (${(parseInt(a)||0).toLocaleString()}円)\n`; 
+        tQ += parseInt(q)||0; 
+        tA += parseInt(a)||0; 
+        cnt++; 
+      }
     });
-    document.getElementById('report-output').value = out + `\n■ 合計：${tQ}個 / ${tA.toLocaleString()}円\n■ 平均：${cnt? (tQ/cnt).toFixed(1): 0}個`;
+    
+    if(cnt > 0) {
+      out += `\n■ 合計：${tQ}個 / ${tA.toLocaleString()}円\n■ 平均：${(tQ/cnt).toFixed(1)}個 / ${Math.round(tA/cnt).toLocaleString()}円`;
+    } else {
+      out += "\n※実績が入力されていません。";
+    }
+    document.getElementById('report-output').value = out;
   }
 
-  /* --- ④ 日報 --- */
+  // --- ④ 日報作成 (エクセルフォーマット再現) ---
   function handleGenPhoto(e) {
-    const files = e.target.files; if(!files || !files.length) return;
-    for(let i=0; i<files.length; i++) genPhotos.push({id:Date.now()+i, url:URL.createObjectURL(files[i])});
-    const g = document.getElementById('g-photo-grid'); g.innerHTML = '';
-    genPhotos.forEach(p=>g.innerHTML+=`<div class="photo-thumb"><img src="${p.url}"><button class="del-btn" onclick="delGenPhoto(${p.id})"><span class="material-symbols-rounded" style="font-size:14px;">close</span></button></div>`);
-    e.target.value = '';
+    const files = e.target.files; 
+    if(!files || !files.length) return;
+    
+    for(let i=0; i<files.length; i++) {
+      genPhotos.push({id: Date.now()+i, url: URL.createObjectURL(files[i])});
+    }
+    
+    renderGenPhotos();
+    e.target.value = ''; // 連続で同じ画像を選べるようにリセット
   }
+  
   function delGenPhoto(id) {
     genPhotos = genPhotos.filter(x => x.id !== id);
-    const g = document.getElementById('g-photo-grid'); g.innerHTML = '';
-    genPhotos.forEach(p=>g.innerHTML+=`<div class="photo-thumb"><img src="${p.url}"><button class="del-btn" onclick="delGenPhoto(${p.id})"><span class="material-symbols-rounded" style="font-size:14px;">close</span></button></div>`);
+    renderGenPhotos();
+  }
+  
+  function renderGenPhotos() {
+    const g = document.getElementById('g-photo-grid'); 
+    g.innerHTML = '';
+    genPhotos.forEach(p => {
+      g.innerHTML += `
+      <div class="photo-thumb">
+        <img src="${p.url}">
+        <button class="del-btn" onclick="delGenPhoto(${p.id})">
+          <span class="material-symbols-rounded" style="font-size:14px;">close</span>
+        </button>
+      </div>`;
+    });
   }
 
   function generateExcelStyleReport() {
@@ -609,15 +811,27 @@
       }
       return res + `\n`;
     };
+    
     out += buildExcelList('セール検証', 's');
     out += buildExcelList('重点単品', 'f');
+    
     out += `所感・その他\n${document.getElementById('dr-memos').value}`;
-    if(genPhotos.length > 0) out += `\n\n※展開状況等、写真 ${genPhotos.length}枚 添付あり`;
+    
+    if(genPhotos.length > 0) {
+      out += `\n\n※展開状況等、写真 ${genPhotos.length}枚 添付あり`;
+    }
 
     document.getElementById('dr-final-output').value = out;
   }
 
-  function copyText(id) { const el=document.getElementById(id); el.select(); document.execCommand('copy'); alert("テキストをコピーしました！"); }
+  // クリップボードコピー
+  function copyText(id) { 
+    const el = document.getElementById(id); 
+    if(!el.value) return;
+    el.select(); 
+    document.execCommand('copy'); 
+    alert("テキストをコピーしました！\n（日報システムやメール等に貼り付けられます）"); 
+  }
 </script>
 </body>
 </html>
