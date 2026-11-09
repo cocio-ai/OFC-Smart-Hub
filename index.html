@@ -25,6 +25,7 @@
     font-family: 'Noto Sans JP', sans-serif; 
     background-color: var(--bg-light); color: var(--text-main); 
     margin: 0; padding-bottom: 90px; -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden; /* 【修正】画面全体が左右にグラグラ揺れるバグを防止 */
   }
 
   /* --- ヘッダー --- */
@@ -79,15 +80,30 @@
   .flex-1 { flex: 1; min-width: 80px; }
 
   /* --- ① TODO用 カンバン --- */
-  .kanban-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 16px 16px; }
-  .kanban-col { flex: 0 0 85%; max-width: 320px; background: #e5e7eb; border-radius: var(--radius-lg); padding: 16px; scroll-snap-align: center; max-height: 65vh; overflow-y: auto; }
+  .kanban-scroll { 
+    /* 【修正】無限にスライドするバグを解消し、安全な横スクロールに変更 */
+    display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; 
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; 
+  }
+  .kanban-col { 
+    flex: 0 0 85%; max-width: 320px; background: #e5e7eb; border-radius: var(--radius-lg); 
+    padding: 16px; scroll-snap-align: center; max-height: 65vh; overflow-y: auto; 
+  }
   .task-card { background: var(--surface); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--text-muted); }
   .task-card.priority { border-left-color: var(--danger); }
   .task-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 100px; background: var(--bg-light); margin-bottom: 8px; }
   .task-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
   .task-actions button { background: var(--bg-light); border: none; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; cursor: pointer; }
-  .chart-card { flex: 0 0 80%; max-width: 280px; background: var(--surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); scroll-snap-align: center; text-align: center; }
-  .dashboard-scroll { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; }
+  
+  .dashboard-scroll { 
+    /* 【修正】ダッシュボード側の横揺れバグも解消 */
+    display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; 
+    padding-bottom: 16px; -webkit-overflow-scrolling: touch;
+  }
+  .chart-card { 
+    flex: 0 0 80%; max-width: 280px; background: var(--surface); padding: 16px; 
+    border-radius: var(--radius-md); border: 1px solid var(--border); scroll-snap-align: center; text-align: center; 
+  }
 
   /* --- ② 案内作成 (A4プレビュー領域) --- */
   .preview-wrapper { width: 100%; overflow-x: auto; background: #64748b; padding: 24px; border-radius: var(--radius-md); margin-top: 16px; box-sizing: border-box; }
@@ -343,18 +359,17 @@
   let dailyPieChart, weeklyPieChart, overallPieChart;
 
   window.onload = () => {
-    // 過去バージョンのデータを自動引継ぎ（データ消失防止）
-    const sS = localStorage.getItem('ofc_s_modern_stable') || localStorage.getItem('ofc_s_modern_full') || localStorage.getItem('ofc_s_v14') || localStorage.getItem('ofc_s_v13') || localStorage.getItem('ofc_stores_perf');
+    const sS = localStorage.getItem('ofc_s_modern_stable') || localStorage.getItem('ofc_s_modern_full') || localStorage.getItem('ofc_s_v14') || localStorage.getItem('ofc_stores_perf');
     if(sS) document.getElementById('setting-stores').value = sS;
     
-    const sT = localStorage.getItem('ofc_t_modern_stable') || localStorage.getItem('ofc_t_modern_full') || localStorage.getItem('ofc_t_v14') || localStorage.getItem('ofc_t_v13') || localStorage.getItem('ofc_tasks_perf');
+    const sT = localStorage.getItem('ofc_t_modern_stable') || localStorage.getItem('ofc_t_modern_full') || localStorage.getItem('ofc_t_v14') || localStorage.getItem('ofc_tasks_perf');
     if(sT) tasks = JSON.parse(sT);
     
     const t = new Date();
     document.getElementById('base-date').value = fmtD(t);
     document.getElementById('todo-deadline').value = fmtD(t);
     
-    // 入力枠の初期セット（DOM再描画問題の解決済み関数を使用）
+    // 入力枠の初期セット
     for(let i=0; i<2; i++) { addSaleRow(); addFocusRow(); addSpecialRow(); }
     addEventRow(); addPlaichiRow(); addAppRow();
     
@@ -367,7 +382,7 @@
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById(id).classList.add('active'); 
     event.currentTarget.classList.add('active');
-    window.scrollTo(0,0); // 古いブラウザでも動くスクロール
+    window.scrollTo(0,0);
     
     if(id==='tab1') updChartsSafe(); 
     if(id==='tab2') updatePreview();
@@ -474,9 +489,8 @@
 
   function saveT() { localStorage.setItem('ofc_t_modern_stable', JSON.stringify(tasks)); }
 
-  // グラフ機能（エラーによるシステム完全停止を防ぐ保護処理）
   function initChartsSafe() {
-    if (typeof Chart === 'undefined') return; // 通信環境でCDNがブロックされた場合のシステム停止を回避
+    if (typeof Chart === 'undefined') return; 
     try {
       Chart.defaults.color = '#6b7280';
       Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
@@ -524,11 +538,10 @@
   }
 
   // ==========================================
-  // ② 案内作成 (入力リセットバグ修正版)
+  // ② 案内作成
   // ==========================================
   function crDelBtn() { return `<button class="del-row-btn" onclick="this.parentElement.remove(); updatePreview();"><span class="material-symbols-rounded">close</span></button>`; }
   
-  // 修正箇所：insertAdjacentHTMLを使うことで、既存の入力済みデータが初期化されるバグを完全に修正しました
   function addSaleRow() { document.getElementById('sale-inputs').insertAdjacentHTML('beforeend', `<div class="flex-row"><input type="date" class="s-s flex-1" onchange="updatePreview()"><input type="date" class="s-e flex-1" onchange="updatePreview()"><input type="text" class="s-n flex-1" placeholder="セール名" oninput="updatePreview()">${crDelBtn()}</div>`); }
   function addEventRow() { document.getElementById('event-inputs').insertAdjacentHTML('beforeend', `<div class="flex-row"><input type="date" class="e-date flex-1" onchange="updatePreview()"><select class="e-day flex-1" onchange="updatePreview()"><option value="none">曜日なし</option><option value="1">月曜</option><option value="2">火曜</option><option value="3">水曜</option><option value="4">木曜</option><option value="5">金曜</option><option value="6">土曜</option><option value="0">日曜</option></select><input type="text" class="e-name flex-1" placeholder="内容" oninput="updatePreview()">${crDelBtn()}</div>`); }
   function addPlaichiRow() { document.getElementById('plaichi-inputs').insertAdjacentHTML('beforeend', `<div class="flex-row"><input type="text" class="pl-period flex-1" placeholder="期間" oninput="updatePreview()"><input type="text" class="pl-target flex-1" placeholder="買うと" oninput="updatePreview()"><input type="text" class="pl-reward flex-1" placeholder="無料" oninput="updatePreview()">${crDelBtn()}</div>`); }
@@ -547,7 +560,6 @@
     const sun2 = new Date(mon); sun2.setDate(mon.getDate()+13);
     document.getElementById('display-period').innerText = `${mon.getMonth()+1}/${mon.getDate()}(月) 〜 ${sun2.getMonth()+1}/${sun2.getDate()}(日)`;
     
-    // カレンダー生成
     const sales = Array.from(document.querySelectorAll('#sale-inputs .flex-row')).map(r=>({s:r.querySelector('.s-s').value, e:r.querySelector('.s-e').value, n:r.querySelector('.s-n').value})).filter(x=>x.n);
     const events = Array.from(document.querySelectorAll('#event-inputs .flex-row')).map(r=>({d:r.querySelector('.e-date').value, w:r.querySelector('.e-day').value, n:r.querySelector('.e-name').value})).filter(x=>x.n);
 
@@ -575,7 +587,6 @@
     }
     document.getElementById('cal-container').innerHTML = cal + '</table>';
     
-    // プライチ・アプリ生成
     const pls = Array.from(document.querySelectorAll('#plaichi-inputs .flex-row')).map(r => ({p: r.querySelector('.pl-period').value, t: r.querySelector('.pl-target').value, rw: r.querySelector('.pl-reward').value})).filter(x => x.t);
     const aps = Array.from(document.querySelectorAll('#app-inputs .flex-row')).map(r => ({p: r.querySelector('.ap-period').value, d: r.querySelector('.ap-detail').value})).filter(x => x.d);
     
@@ -589,7 +600,6 @@
     } else { document.getElementById('promo-header').style.display = 'none'; }
     document.getElementById('promo-container').innerHTML = pOut;
 
-    // 重点商品生成
     const fcs = Array.from(document.querySelectorAll('#focus-inputs .flex-row')).map(r => ({n: r.querySelector('.f-name').value, c: r.querySelector('.f-code').value, m: r.querySelector('.f-margin').value, t: r.querySelector('.f-target').value})).filter(x => x.n);
     let fOut = '';
     if(fcs.length) {
@@ -600,7 +610,6 @@
     } else { document.getElementById('focus-header').style.display = 'none'; }
     document.getElementById('focus-container').innerHTML = fOut;
 
-    // 特別発注生成
     const sps = Array.from(document.querySelectorAll('#special-inputs .flex-row')).map(r => ({s: r.querySelector('.sp-star').value, n: r.querySelector('.sp-name').value, nt: r.querySelector('.sp-note').value})).filter(x => x.n);
     let sOut = '';
     if(sps.length) {
@@ -616,7 +625,6 @@
     } else { document.getElementById('special-header').style.display = 'none'; }
     document.getElementById('special-container').innerHTML = sOut;
     
-    // 特記事項
     document.getElementById('memo-output').innerText = document.getElementById('memo-input').value;
   }
   
@@ -629,12 +637,11 @@
   }
 
   // ==========================================
-  // ③ 報告・互換性問題修正版
+  // ③ 報告
   // ==========================================
   function generateReport() {
     let out = "【店舗別実績】\n", tQ=0, tA=0, cnt=0;
     
-    // 古いブラウザ（iOS15等）でエラー停止を引き起こす :has セレクタを廃止し、安全な参照方法に変更
     const rows = document.querySelectorAll('.report-row-item');
     rows.forEach(r => {
       const n = r.querySelector('.r-name').value;
