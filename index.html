@@ -152,28 +152,16 @@
     <textarea id="setting-stores" rows="6">尾張旭晴丘町池上店&#10;A店&#10;B店</textarea>
     <button class="btn" style="margin-top:16px;" onclick="saveSettings()">設定を保存して反映</button>
   </div>
-
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-left"><span class="material-symbols-rounded text-primary">list_alt</span>定型タスクの設定</div>
-    </div>
-    <p style="font-size:12px; color:var(--text-muted); margin-top:0;">よく使うTODOを登録しておくと、ワンタップで入力できます。</p>
-    
-    <div id="setting-routines-list" style="margin-bottom:12px;"></div>
-    
-    <div class="flex-row">
-      <input type="text" id="new-routine-input" class="flex-1" placeholder="新しい定型タスクを入力" style="margin-bottom:0;">
-      <button class="btn btn-outline" style="width:auto; padding:12px;" onclick="addRoutine()">追加</button>
-    </div>
-  </div>
 </div>
 
 <!-- ① TODOリスト -->
 <div id="tab1" class="tab-content active container">
+  <!-- 新規タスク登録カード -->
   <div class="card">
     <div class="card-title">
       <div class="card-title-left"><span class="material-symbols-rounded text-primary">add_task</span>新規タスク登録</div>
     </div>
+    
     <div class="flex-row" style="margin-bottom:8px;">
       <select id="routine-select" class="flex-1" style="margin-bottom:0; font-size:14px !important;">
         <!-- JSで動的生成 -->
@@ -182,6 +170,12 @@
     </div>
     
     <textarea id="task-input" rows="2" placeholder="タスク内容を入力..."></textarea>
+    
+    <!-- ★その場で定型タスクに登録するボタン -->
+    <div style="text-align:right; margin-bottom:12px; margin-top:-8px;">
+      <button class="btn-outline btn-sm" style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer; padding:4px;" onclick="saveCurrentInputAsRoutine()">+ 今の入力を定型タスクに保存</button>
+    </div>
+
     <div class="flex-row">
       <select id="todo-category" class="flex-1"><option>💼 OFC業務</option><option>⚙️ オペレーション</option><option>🏪 店舗業務</option><option>📝 その他</option></select>
       <select id="todo-store-select" class="flex-1"></select>
@@ -191,6 +185,18 @@
       <label style="font-weight:700; color:var(--danger);"><input type="checkbox" id="todo-priority" style="width:20px; height:20px; vertical-align:middle;"> 🔥最優先</label>
     </div>
     <button class="btn" style="margin-top:12px;" onclick="addTask()">タスクを追加</button>
+  </div>
+
+  <!-- 定型タスク管理カード (TODO画面内に移動) -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left"><span class="material-symbols-rounded text-primary">list_alt</span>定型タスクの管理</div>
+    </div>
+    <div id="setting-routines-list" style="margin-bottom:12px;"></div>
+    <div class="flex-row">
+      <input type="text" id="new-routine-input" class="flex-1" placeholder="新しい定型タスクを入力" style="margin-bottom:0;">
+      <button class="btn btn-outline" style="width:auto; padding:12px;" onclick="addRoutine()">追加</button>
+    </div>
   </div>
 
   <div style="margin-bottom:12px;">
@@ -368,7 +374,7 @@
 <script>
   let assignedStores = [];
   let tasks = [];
-  let routines = ["特発（金曜11時）の確認", "鮮度管理チェック", "POP展開確認", "【例】〇〇の確認"]; // デフォルト定型タスク
+  let routines = ["特発（金曜11時）の確認", "鮮度管理チェック", "POP展開確認", "【例】〇〇の確認"];
   let genPhotos = [];
   let holidays = {}; 
   let dailyPieChart, weeklyPieChart, overallPieChart;
@@ -418,7 +424,7 @@
   function fmtD(d) { return isNaN(d) ? "" : d.toISOString().split('T')[0]; }
 
   // ==========================================
-  // ⚙️ 設定 (店舗 ＆ 定型タスク)
+  // ⚙️ 設定 (店舗)
   // ==========================================
   function saveSettings(init=false) {
     const raw = document.getElementById('setting-stores').value; 
@@ -449,7 +455,11 @@
     if(!init) { alert("設定を保存しました"); switchTab('tab1'); }
   }
 
-  // 定型タスク（ルーティン）管理
+  // ==========================================
+  // ① TODO機能 ＆ 定型タスク管理
+  // ==========================================
+  
+  // 定型タスクの描画・追加・削除
   function renderRoutines() {
     let s = '<option value="">-- 定型タスクを選ぶ --</option>';
     routines.forEach(r => { s += `<option value="${r}">${r}</option>`; });
@@ -464,17 +474,34 @@
     });
     document.getElementById('setting-routines-list').innerHTML = l;
   }
+  
   function addRoutine() {
     const v = document.getElementById('new-routine-input').value.trim();
-    if(v) { routines.push(v); document.getElementById('new-routine-input').value=''; saveRoutines(); }
+    if(v) { 
+      if(!routines.includes(v)) { routines.push(v); document.getElementById('new-routine-input').value=''; saveRoutines(); }
+      else { alert("すでに登録されています"); }
+    }
   }
+  
   function delRoutine(i) { routines.splice(i, 1); saveRoutines(); }
   function saveRoutines() { localStorage.setItem('ofc_routines_pro', JSON.stringify(routines)); renderRoutines(); }
 
+  // 今の入力を定型タスクに保存するボタンの処理
+  function saveCurrentInputAsRoutine() {
+    const v = document.getElementById('task-input').value.trim();
+    if(v) { 
+      if(!routines.includes(v)) {
+        routines.push(v); 
+        saveRoutines(); 
+        alert("定型タスクに登録しました！次回からプルダウンで呼び出せます。");
+      } else {
+        alert("そのタスクは既に定型として登録されています。");
+      }
+    } else {
+      alert("タスク内容を入力してからボタンを押してください。");
+    }
+  }
 
-  // ==========================================
-  // ① TODO機能
-  // ==========================================
   function applyRoutine() {
     const r = document.getElementById('routine-select').value;
     if(r) document.getElementById('task-input').value = r;
@@ -706,12 +733,10 @@
         let amtStr = "";
         let rowAmt = 0;
         
-        // 千円入力がある場合（5.6 -> 5.6千円、内部では 5600円）
         if (ka) {
           amtStr = `${ka}千円`;
           rowAmt = parseFloat(ka) * 1000;
         } 
-        // 円入力のみの場合
         else if (a) {
           amtStr = `${parseInt(a).toLocaleString()}円`;
           rowAmt = parseInt(a);
