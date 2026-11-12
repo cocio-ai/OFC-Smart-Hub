@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>OFC Smart Hub - Pro Edition</title>
+<title>OFC Smart Hub - Pro Edition (Custom)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- 【追加】スマホでのドラッグ＆ドロップ対応ライブラリ -->
+<!-- スマホでのドラッグ＆ドロップ対応ライブラリ -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <style>
   :root {
@@ -102,21 +102,22 @@
   .checkbox-chip:has(input:checked) { background: #dcfce7; border-color: var(--primary); color: #166534; }
   .checkbox-chip input { display: none; }
   
+  .excel-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; background: var(--bg-light); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  .excel-row span { font-weight: 900; font-size: 14px; color: var(--text-muted); width: 24px; text-align: center; }
+  .excel-row input { margin: 0; border: none; background: transparent; padding: 4px; }
+  
   .photo-upload-btn { background: #f3f4f6; color: var(--text-main); border: 2px dashed #d1d5db; border-radius: var(--radius-md); padding: 16px; text-align: center; font-weight: 700; display: block; cursor: pointer; margin-bottom: 12px; }
   .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-bottom: 16px; }
   .photo-thumb { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
   .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .photo-thumb .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display:flex; justify-content:center; align-items:center;}
 
-  /* テンプレ商品用のDatalist */
   datalist { display: none; }
-
   @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { position: absolute; left: 0; top: 0; width: 210mm; padding: 8mm; margin: 0; } .nav-tabs, header, .card, .btn { display: none !important; } @page { size: A4 portrait; margin: 0; } }
 </style>
 </head>
 <body>
 
-<!-- 重点商品テンプレ（よく使う商品） -->
 <datalist id="preset-items">
   <option value="セブンカフェ">
   <option value="ナナチキ">
@@ -151,6 +152,20 @@
     <textarea id="setting-stores" rows="6">尾張旭晴丘町池上店&#10;A店&#10;B店</textarea>
     <button class="btn" style="margin-top:16px;" onclick="saveSettings()">設定を保存して反映</button>
   </div>
+
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left"><span class="material-symbols-rounded text-primary">list_alt</span>定型タスクの設定</div>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:0;">よく使うTODOを登録しておくと、ワンタップで入力できます。</p>
+    
+    <div id="setting-routines-list" style="margin-bottom:12px;"></div>
+    
+    <div class="flex-row">
+      <input type="text" id="new-routine-input" class="flex-1" placeholder="新しい定型タスクを入力" style="margin-bottom:0;">
+      <button class="btn btn-outline" style="width:auto; padding:12px;" onclick="addRoutine()">追加</button>
+    </div>
+  </div>
 </div>
 
 <!-- ① TODOリスト -->
@@ -159,13 +174,9 @@
     <div class="card-title">
       <div class="card-title-left"><span class="material-symbols-rounded text-primary">add_task</span>新規タスク登録</div>
     </div>
-    <!-- テンプレ入力 -->
     <div class="flex-row" style="margin-bottom:8px;">
-      <select id="routine-select" class="flex-1" style="margin-bottom:0;">
-        <option value="">-- 定型タスクを選ぶ --</option>
-        <option value="特発（金曜11時）の確認">特発（金曜11時）の確認</option>
-        <option value="鮮度管理チェック">鮮度管理チェック</option>
-        <option value="POP展開確認">POP展開確認</option>
+      <select id="routine-select" class="flex-1" style="margin-bottom:0; font-size:14px !important;">
+        <!-- JSで動的生成 -->
       </select>
       <button class="btn btn-outline btn-sm" style="width:auto;" onclick="applyRoutine()">反映</button>
     </div>
@@ -182,7 +193,6 @@
     <button class="btn" style="margin-top:12px;" onclick="addTask()">タスクを追加</button>
   </div>
 
-  <!-- 【追加】店舗絞り込みフィルター -->
   <div style="margin-bottom:12px;">
     <select id="todo-filter-store" onchange="renderTasks()" style="padding:8px; border-radius:20px; font-weight:bold;">
       <option value="all">すべて表示</option>
@@ -279,6 +289,7 @@
 <div id="tab3" class="tab-content container">
   <div class="card">
     <div class="card-title"><div class="card-title-left"><span class="material-symbols-rounded text-primary">monitoring</span>数値報告ツール</div></div>
+    <p style="font-size:12px; color:var(--text-muted);">「個数」「円」「千円」のいずれかに入力があれば抽出されます。</p>
     <div id="report-store-list"></div>
     <button class="btn" style="margin-top:16px;" onclick="generateReport()">テキスト生成</button>
   </div>
@@ -299,10 +310,16 @@
     <label style="font-size:14px; font-weight:700; display:block; margin-bottom:8px;">巡回店舗を選択</label>
     <div id="dr-stores-checkboxes" class="checkbox-group"></div>
 
+    <div style="background:#fff3cd; border-left:4px solid #f5c6cb; padding:12px; border-radius:4px; margin-bottom:16px; font-size:12px; color:#856404;">
+      <strong style="display:block; margin-bottom:4px;">💡 iPadで音声入力を快適に使うコツ</strong>
+      ブラウザ(Safari)内蔵のマイクボタン（以下の <span class="material-symbols-rounded" style="font-size:14px; vertical-align:middle;">mic</span>）は、セキュリティの都合上うまく反応しないことがあります。<br>
+      iPad等のソフトウェアキーボードにある<strong>【 OS標準の 🎤 マイクボタン 】</strong>を使うと、途切れず高精度で長文入力が可能です！
+    </div>
+
     <!-- 打ち合わせ内容 (音声入力対応) -->
     <div class="card" style="background:var(--bg-light); border:none; box-shadow:none; padding:12px;">
       <h3 style="font-size:15px; margin:0 0 12px 0; display:flex; align-items:center; gap:6px;">
-        <span class="material-symbols-rounded">forum</span> 打ち合わせ内容 <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(マイクで音声入力可)</span>
+        <span class="material-symbols-rounded">forum</span> 打ち合わせ内容
       </h3>
       <div class="voice-input-wrapper"><span>①</span><input type="text" id="m1"><button class="voice-btn" onclick="startDictation('m1', this)"><span class="material-symbols-rounded">mic</span></button></div>
       <div class="voice-input-wrapper"><span>②</span><input type="text" id="m2"><button class="voice-btn" onclick="startDictation('m2', this)"><span class="material-symbols-rounded">mic</span></button></div>
@@ -351,16 +368,16 @@
 <script>
   let assignedStores = [];
   let tasks = [];
+  let routines = ["特発（金曜11時）の確認", "鮮度管理チェック", "POP展開確認", "【例】〇〇の確認"]; // デフォルト定型タスク
   let genPhotos = [];
-  let holidays = {}; // 祝日データキャッシュ
+  let holidays = {}; 
   let dailyPieChart, weeklyPieChart, overallPieChart;
-  let sortables = []; // D&Dのインスタンス保持用
+  let sortables = []; 
 
   // ==========================================
   // 初期化
   // ==========================================
   window.onload = async () => {
-    // 祝日API取得 (キャッシュ)
     try {
       const res = await fetch('https://holidays-jp.github.io/api/v1/date.json');
       holidays = await res.json();
@@ -371,6 +388,9 @@
     
     const sT = localStorage.getItem('ofc_t_pro') || localStorage.getItem('ofc_t_modern_stable');
     if(sT) tasks = JSON.parse(sT);
+
+    const rS = localStorage.getItem('ofc_routines_pro');
+    if(rS) routines = JSON.parse(rS);
     
     const t = new Date();
     document.getElementById('base-date').value = fmtD(t);
@@ -381,6 +401,7 @@
     
     initChartsSafe(); 
     saveSettings(true);
+    renderRoutines();
     initDragAndDrop();
   };
 
@@ -397,7 +418,7 @@
   function fmtD(d) { return isNaN(d) ? "" : d.toISOString().split('T')[0]; }
 
   // ==========================================
-  // ⚙️ 設定
+  // ⚙️ 設定 (店舗 ＆ 定型タスク)
   // ==========================================
   function saveSettings(init=false) {
     const raw = document.getElementById('setting-stores').value; 
@@ -411,7 +432,14 @@
     
     const rL = document.getElementById('report-store-list'); rL.innerHTML = '';
     assignedStores.forEach(s=> {
-      rL.insertAdjacentHTML('beforeend', `<div class="excel-row report-row-item" style="background:var(--surface);"><span style="width:auto; color:var(--primary);"><span class="material-symbols-rounded" style="font-size:18px;">store</span></span><input type="text" class="r-name" value="${s}" readonly style="flex:1; background:transparent; font-weight:700;"><input type="number" class="r-qty" placeholder="個" style="width:70px; text-align:right;"><input type="number" class="r-amt" placeholder="円" style="width:90px; text-align:right;"></div>`);
+      rL.insertAdjacentHTML('beforeend', `
+      <div class="excel-row report-row-item" style="background:var(--surface);">
+        <span style="width:auto; color:var(--primary);"><span class="material-symbols-rounded" style="font-size:18px;">store</span></span>
+        <input type="text" class="r-name" value="${s}" readonly style="flex:1; background:transparent; font-weight:700; font-size:14px !important;">
+        <input type="number" class="r-qty" placeholder="個" style="width:50px; text-align:right; font-size:13px !important; padding:8px 4px;">
+        <input type="number" class="r-amt" placeholder="円" style="width:60px; text-align:right; font-size:13px !important; padding:8px 4px;">
+        <input type="number" step="any" class="r-k-amt" placeholder="千円" style="width:60px; text-align:right; font-size:13px !important; padding:8px 4px; border:1px solid var(--accent);">
+      </div>`);
     });
       
     const dC = document.getElementById('dr-stores-checkboxes'); dC.innerHTML = '';
@@ -421,8 +449,31 @@
     if(!init) { alert("設定を保存しました"); switchTab('tab1'); }
   }
 
+  // 定型タスク（ルーティン）管理
+  function renderRoutines() {
+    let s = '<option value="">-- 定型タスクを選ぶ --</option>';
+    routines.forEach(r => { s += `<option value="${r}">${r}</option>`; });
+    document.getElementById('routine-select').innerHTML = s;
+    
+    let l = '';
+    routines.forEach((r, i) => {
+      l += `<div class="excel-row" style="margin-bottom:4px;">
+        <input type="text" value="${r}" readonly style="flex:1; margin:0; border:none; background:transparent; font-size:14px !important;">
+        <button style="background:#fee2e2; color:var(--danger); border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="delRoutine(${i})">削除</button>
+      </div>`;
+    });
+    document.getElementById('setting-routines-list').innerHTML = l;
+  }
+  function addRoutine() {
+    const v = document.getElementById('new-routine-input').value.trim();
+    if(v) { routines.push(v); document.getElementById('new-routine-input').value=''; saveRoutines(); }
+  }
+  function delRoutine(i) { routines.splice(i, 1); saveRoutines(); }
+  function saveRoutines() { localStorage.setItem('ofc_routines_pro', JSON.stringify(routines)); renderRoutines(); }
+
+
   // ==========================================
-  // ① TODO機能 (D&D, フィルター, ルーティン)
+  // ① TODO機能
   // ==========================================
   function applyRoutine() {
     const r = document.getElementById('routine-select').value;
@@ -440,10 +491,8 @@
     const filterStore = document.getElementById('todo-filter-store').value;
     ['todo','doing','done'].forEach(st => {
       const col = document.getElementById(`list-${st}`); col.innerHTML = '';
-      
       let filteredTasks = tasks.filter(t=>t.status===st);
       if(filterStore !== 'all') filteredTasks = filteredTasks.filter(t=>t.target === filterStore);
-
       filteredTasks.sort((a,b)=>b.priority-a.priority).forEach(t => {
         col.insertAdjacentHTML('beforeend', `
         <div class="task-card ${t.priority?'priority':''}" data-id="${t.id}">
@@ -467,14 +516,12 @@
     ['todo', 'doing', 'done'].forEach(st => {
       const el = document.getElementById(`list-${st}`);
       sortables.push(new Sortable(el, {
-        group: 'shared', animation: 150, delay: 100, delayOnTouchOnly: true, // スマホのスクロールと干渉しないよう長押し設定
+        group: 'shared', animation: 150, delay: 100, delayOnTouchOnly: true,
         onEnd: function (evt) {
           const itemEl = evt.item; const taskId = itemEl.getAttribute('data-id');
-          const toList = evt.to.id; // list-todo, list-doing, list-done
-          const newStatus = toList.replace('list-', '');
+          const newStatus = evt.to.id.replace('list-', '');
           const t = tasks.find(x => x.id === taskId);
           if(t) { t.status = newStatus; t.completedAt = (newStatus==='done') ? new Date().toISOString() : null; saveT(); updChartsSafe(); }
-          // D&D時のバイブレーション (対応端末のみ)
           if(navigator.vibrate) navigator.vibrate(50);
         }
       }));
@@ -519,7 +566,7 @@
   }
 
   // ==========================================
-  // ② 案内作成 (履歴保存・祝日判定・テンプレ)
+  // ② 案内作成
   // ==========================================
   function crDelBtn() { return `<button class="del-row-btn" onclick="this.parentElement.remove(); updatePreview();"><span class="material-symbols-rounded">close</span></button>`; }
   function addSaleRow() { document.getElementById('sale-inputs').insertAdjacentHTML('beforeend', `<div class="flex-row"><input type="date" class="s-s flex-1" onchange="updatePreview()"><input type="date" class="s-e flex-1" onchange="updatePreview()"><input type="text" class="s-n flex-1" placeholder="セール名" oninput="updatePreview()">${crDelBtn()}</div>`); }
@@ -529,7 +576,6 @@
   function addFocusRow() { document.getElementById('focus-inputs').insertAdjacentHTML('beforeend', `<div class="flex-row"><input type="text" class="f-name flex-1" list="preset-items" placeholder="商品名" style="min-width:30%;" oninput="updatePreview()"><input type="text" class="f-code flex-1" placeholder="コード" oninput="updatePreview()"><input type="number" class="f-margin flex-1" placeholder="%" oninput="updatePreview()"><input type="number" class="f-target flex-1" placeholder="個" oninput="updatePreview()">${crDelBtn()}</div>`); }
   function addSpecialRow() { document.getElementById('special-inputs').insertAdjacentHTML('beforeend', `<div class="flex-row"><select class="sp-star flex-1" onchange="updatePreview()"><option value="1">★☆☆</option><option value="2">★★☆</option><option value="3">★★★</option></select><input type="text" class="sp-name flex-1" list="preset-items" placeholder="商品名" style="min-width:30%;" oninput="updatePreview()"><input type="text" class="sp-note flex-1" placeholder="追記" oninput="updatePreview()">${crDelBtn()}</div>`); }
 
-  // 履歴保存・復元
   function saveHistory() {
     const htmlState = { s: document.getElementById('sale-inputs').innerHTML, e: document.getElementById('event-inputs').innerHTML, p: document.getElementById('plaichi-inputs').innerHTML, a: document.getElementById('app-inputs').innerHTML, f: document.getElementById('focus-inputs').innerHTML, sp: document.getElementById('special-inputs').innerHTML, m: document.getElementById('memo-input').value };
     localStorage.setItem('ofc_guide_history', JSON.stringify(htmlState));
@@ -561,7 +607,7 @@
       for(let dayOffset=0; dayOffset<7; dayOffset++) {
         const cur = new Date(mon); cur.setDate(mon.getDate() + (w*7) + dayOffset); 
         const cS = fmtD(cur);
-        const isHoliday = (cur.getDay() === 0 || holidays[cS]) ? 'holiday' : ''; // 祝日・日曜判定
+        const isHoliday = (cur.getDay() === 0 || holidays[cS]) ? 'holiday' : ''; 
         
         cal += `<td><span class="date-num ${isHoliday}">${cur.getMonth()+1}/${cur.getDate()}</span>`;
         if(dayOffset===4) cal += `<span class="special-label">特発締切</span>`; 
@@ -574,7 +620,6 @@
     }
     document.getElementById('cal-container').innerHTML = cal + '</table>';
     
-    // 以下、前回同様のHTML組み立て
     const pls = Array.from(document.querySelectorAll('#plaichi-inputs .flex-row')).map(r => ({p: r.querySelector('.pl-period').value, t: r.querySelector('.pl-target').value, rw: r.querySelector('.pl-reward').value})).filter(x => x.t);
     const aps = Array.from(document.querySelectorAll('#app-inputs .flex-row')).map(r => ({p: r.querySelector('.ap-period').value, d: r.querySelector('.ap-detail').value})).filter(x => x.d);
     let pOut = '';
@@ -608,13 +653,14 @@
   function saveAsImage() { if(typeof html2canvas === 'undefined') return alert("画像生成ライブラリ未読み込み"); html2canvas(document.getElementById('print-area'), {scale:2, useCORS:true}).then(c=>{ const l = document.createElement('a'); l.download = '販促案内.png'; l.href = c.toDataURL('image/png'); l.click(); }).catch(err => { alert("保存失敗"); }); }
 
   // ==========================================
-  // ③・④ レポート系 (音声入力・Web共有・画像圧縮)
+  // ③・④ レポート系 (千円対応・音声入力・Web共有・画像圧縮)
   // ==========================================
   
-  // 音声入力 (Web Speech API)
+  // Web Speech API (エラー回避対応)
   function startDictation(targetId, btnEl) {
     if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      return alert("お使いのブラウザは音声入力に対応していません。");
+      alert("ブラウザが音声入力に未対応か、セキュリティでブロックされています。\n\n※iPadをご利用の場合、キーボードの「🎤マイク」ボタンをご利用ください。");
+      return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
@@ -628,39 +674,63 @@
       target.value = target.value ? target.value + " " + transcript : transcript;
       btnEl.classList.remove('recording');
     };
-    recognition.onerror = function(event) { btnEl.classList.remove('recording'); alert("音声認識エラー: " + event.error); };
+    recognition.onerror = function(event) { 
+      btnEl.classList.remove('recording'); 
+      console.warn("音声認識エラー: " + event.error); 
+      if(event.error === 'not-allowed') {
+        alert("マイクのアクセスが許可されていません。\n※iPad標準のキーボードマイクを使う方が確実です。");
+      }
+    };
     recognition.onend = function() { btnEl.classList.remove('recording'); };
     
-    recognition.start();
+    try { recognition.start(); } catch(e) { console.error(e); }
   }
 
-  // Web Share API (ワンタップ共有)
   function shareText(id) {
     const text = document.getElementById(id).value;
     if(!text) return alert("共有するテキストがありません。");
-    if (navigator.share) {
-      navigator.share({ title: '報告データ', text: text }).catch(console.error);
-    } else {
-      alert("お使いの端末は共有ボタンに未対応です。「コピー」ボタンをご利用ください。");
-    }
+    if (navigator.share) { navigator.share({ title: '報告データ', text: text }).catch(console.error); } 
+    else { alert("お使いの端末は共有ボタンに未対応です。「コピー」ボタンをご利用ください。"); }
   }
 
+  // 千円対応のレポート生成
   function generateReport() {
     let out = "【店舗別実績】\n", tQ=0, tA=0, cnt=0;
     document.querySelectorAll('.report-row-item').forEach(r => {
-      const n = r.querySelector('.r-name').value; const q = r.querySelector('.r-qty').value; const a = r.querySelector('.r-amt').value;
-      if(q || a) { out += `・${n}：${q||0}個 (${(parseInt(a)||0).toLocaleString()}円)\n`; tQ += parseInt(q)||0; tA += parseInt(a)||0; cnt++; }
+      const n = r.querySelector('.r-name').value; 
+      const q = r.querySelector('.r-qty').value; 
+      const a = r.querySelector('.r-amt').value;
+      const ka = r.querySelector('.r-k-amt').value; // 千円入力
+      
+      if(q || a || ka) { 
+        let amtStr = "";
+        let rowAmt = 0;
+        
+        // 千円入力がある場合（5.6 -> 5.6千円、内部では 5600円）
+        if (ka) {
+          amtStr = `${ka}千円`;
+          rowAmt = parseFloat(ka) * 1000;
+        } 
+        // 円入力のみの場合
+        else if (a) {
+          amtStr = `${parseInt(a).toLocaleString()}円`;
+          rowAmt = parseInt(a);
+        }
+        
+        out += `・${n}：${q||0}個 ${amtStr ? '('+amtStr+')' : ''}\n`; 
+        tQ += parseInt(q)||0; 
+        tA += rowAmt; 
+        cnt++; 
+      }
     });
     if(cnt > 0) { out += `\n■ 合計：${tQ}個 / ${tA.toLocaleString()}円\n■ 平均：${(tQ/cnt).toFixed(1)}個 / ${Math.round(tA/cnt).toLocaleString()}円`; } 
     else { out += "\n※実績が入力されていません。"; }
     document.getElementById('report-output').value = out;
   }
 
-  // 画像の自動圧縮 (Canvas API)
   function handleGenPhoto(e) {
     const files = e.target.files; if(!files || !files.length) return;
-    const MAX_WIDTH = 800; // 圧縮後の最大幅
-    
+    const MAX_WIDTH = 800; 
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onload = function(event) {
@@ -671,7 +741,7 @@
           if (width > MAX_WIDTH) { height = Math.round((height *= MAX_WIDTH / width)); width = MAX_WIDTH; }
           canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // 圧縮品質70%
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7); 
           genPhotos.push({id: Date.now()+Math.random(), url: dataUrl});
           renderGenPhotos();
         }
