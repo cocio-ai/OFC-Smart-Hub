@@ -55,7 +55,6 @@
   .flex-row input, .flex-row select { margin-bottom: 0; }
   .flex-1 { flex: 1; min-width: 90px; }
 
-  /* 案内作成用の入力グループ枠（見やすく押しやすい2段構成） */
   .input-group-box { background: var(--bg-light); padding: 12px; border-radius: var(--radius-md); margin-bottom: 12px; border: 1px solid var(--border); position: relative; }
   .input-group-box .flex-row:last-child { margin-bottom: 0; }
 
@@ -67,8 +66,8 @@
   .task-card:active { cursor: grabbing; opacity: 0.8; }
   .task-card.priority { border-left-color: var(--danger); }
   .task-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 100px; background: var(--bg-light); margin-bottom: 8px; }
-  .task-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-  .task-actions button { background: var(--bg-light); border: none; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .task-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+  .task-del-btn { background: #fee2e2; color: var(--danger); border: none; width: 36px; height: 36px; border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
   
   /* Dashboard */
   .dashboard-wrapper { display: flex; gap: 8px; justify-content: space-between; width: 100%; }
@@ -130,11 +129,11 @@
 </header>
 
 <nav class="nav-tabs">
-  <button class="tab-btn active" onclick="switchTab('tab1', this)"><span class="material-symbols-rounded">task_alt</span>TODO</button>
-  <button class="tab-btn" onclick="switchTab('tab2', this)"><span class="material-symbols-rounded">calendar_month</span>案内作成</button>
-  <button class="tab-btn" onclick="switchTab('tab3', this)"><span class="material-symbols-rounded">monitoring</span>実績報告</button>
-  <button class="tab-btn" onclick="switchTab('tab4', this)"><span class="material-symbols-rounded">edit_document</span>日報作成</button>
-  <button class="tab-btn" onclick="switchTab('tab0', this)"><span class="material-symbols-rounded">settings</span>設定</button>
+  <button type="button" class="tab-btn active" onclick="switchTab('tab1', this)"><span class="material-symbols-rounded">task_alt</span>TODO</button>
+  <button type="button" class="tab-btn" onclick="switchTab('tab2', this)"><span class="material-symbols-rounded">calendar_month</span>案内作成</button>
+  <button type="button" class="tab-btn" onclick="switchTab('tab3', this)"><span class="material-symbols-rounded">monitoring</span>実績報告</button>
+  <button type="button" class="tab-btn" onclick="switchTab('tab4', this)"><span class="material-symbols-rounded">edit_document</span>日報作成</button>
+  <button type="button" class="tab-btn" onclick="switchTab('tab0', this)"><span class="material-symbols-rounded">settings</span>設定</button>
 </nav>
 
 <!-- ⚙️ 設定タブ -->
@@ -145,7 +144,7 @@
     </div>
     <label style="display:block; font-size:14px; font-weight:700; margin-bottom:8px;">担当店舗（改行区切り）</label>
     <textarea id="setting-stores" rows="6">尾張旭晴丘町池上店&#10;A店&#10;B店</textarea>
-    <button class="btn" style="margin-top:16px;" onclick="saveSettings()">設定を保存して反映</button>
+    <button type="button" class="btn" style="margin-top:16px;" onclick="saveSettings()">設定を保存して反映</button>
   </div>
 </div>
 
@@ -158,13 +157,13 @@
     
     <div class="flex-row" style="margin-bottom:8px;">
       <select id="routine-select" class="flex-1" style="margin-bottom:0; font-size:14px !important;"></select>
-      <button class="btn btn-outline btn-sm" style="width:auto;" onclick="applyRoutine()">反映</button>
+      <button type="button" class="btn btn-outline btn-sm" style="width:auto;" onclick="applyRoutine()">反映</button>
     </div>
     
     <textarea id="task-input" rows="2" placeholder="タスク内容を入力..."></textarea>
     
     <div style="text-align:right; margin-bottom:12px; margin-top:-6px;">
-      <button class="btn-outline btn-sm" style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer; padding:4px;" onclick="saveCurrentInputAsRoutine()">+ 今の入力を定型タスクに保存</button>
+      <button type="button" class="btn-outline btn-sm" style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer; padding:4px;" onclick="saveCurrentInputAsRoutine()">+ 今の入力を定型タスクに保存</button>
     </div>
 
     <div class="flex-row">
@@ -175,7 +174,7 @@
       <input type="date" id="todo-deadline" style="width:150px;">
       <label style="font-weight:700; color:var(--danger);"><input type="checkbox" id="todo-priority" style="width:20px; height:20px; vertical-align:middle;"> 🔥最優先</label>
     </div>
-    <button class="btn" style="margin-top:12px;" onclick="addTask()">タスクを追加</button>
+    <button type="button" class="btn" style="margin-top:12px;" onclick="addTask()">タスクを追加</button>
   </div>
 
   <div class="card">
@@ -185,7 +184,7 @@
     <div id="setting-routines-list" style="margin-bottom:12px;"></div>
     <div class="flex-row">
       <input type="text" id="new-routine-input" class="flex-1" placeholder="新しい定型タスクを入力" style="margin-bottom:0;">
-      <button class="btn btn-outline" style="width:auto; padding:12px;" onclick="addRoutine()">追加</button>
+      <button type="button" class="btn btn-outline" style="width:auto; padding:12px;" onclick="addRoutine()">追加</button>
     </div>
   </div>
 
@@ -223,12 +222,12 @@
 <!-- ② 店舗案内作成ツール -->
 <div id="tab2" class="tab-content container">
   <div class="flex-row" style="margin-bottom:16px;">
-    <button class="btn btn-outline flex-1" onclick="window.print()">PDF印刷</button>
-    <button class="btn flex-1" style="background:var(--accent);" onclick="saveAsImage()">画像保存</button>
+    <button type="button" class="btn btn-outline flex-1" onclick="window.print()">PDF印刷</button>
+    <button type="button" class="btn flex-1" style="background:var(--accent);" onclick="saveAsImage()">画像保存</button>
   </div>
   <div class="flex-row" style="margin-bottom:16px;">
-    <button class="btn flex-1" style="background:#1f2937; padding:10px; font-size:14px;" onclick="saveHistory()">入力内容を保存</button>
-    <button class="btn btn-outline flex-1" style="padding:10px; font-size:14px;" onclick="loadHistory()">保存データを復元</button>
+    <button type="button" class="btn flex-1" style="background:#1f2937; padding:10px; font-size:14px;" onclick="saveHistory()">入力内容を保存</button>
+    <button type="button" class="btn btn-outline flex-1" style="padding:10px; font-size:14px;" onclick="loadHistory()">保存データを復元</button>
   </div>
 
   <div class="card">
@@ -238,11 +237,11 @@
     
     <label style="display:block; font-size:14px; font-weight:700; color:var(--accent); margin-top:16px; margin-bottom:8px;">セール期間</label>
     <div id="sale-inputs"></div>
-    <button class="btn btn-outline" style="padding:10px; font-size:14px;" onclick="addSaleRow()">+ セール追加</button>
+    <button type="button" class="btn btn-outline" style="padding:10px; font-size:14px;" onclick="addSaleRow()">+ セール追加</button>
     
     <label style="display:block; font-size:14px; font-weight:700; margin-top:20px; margin-bottom:8px;">単発予定（日付または曜日）</label>
     <div id="event-inputs"></div>
-    <button class="btn btn-outline" style="padding:10px; font-size:14px;" onclick="addEventRow()">+ 予定追加</button>
+    <button type="button" class="btn btn-outline" style="padding:10px; font-size:14px;" onclick="addEventRow()">+ 予定追加</button>
   </div>
 
   <div class="card">
@@ -250,19 +249,19 @@
     
     <label style="font-size:14px; font-weight:700; display:block; margin-bottom:8px; color:var(--danger);">プライチ設定</label>
     <div id="plaichi-inputs"></div>
-    <button class="btn btn-outline" style="padding:10px; font-size:14px; margin-bottom:20px;" onclick="addPlaichiRow()">+ プライチ追加</button>
+    <button type="button" class="btn btn-outline" style="padding:10px; font-size:14px; margin-bottom:20px;" onclick="addPlaichiRow()">+ プライチ追加</button>
     
     <label style="font-size:14px; font-weight:700; display:block; margin-bottom:8px; color:var(--primary);">アプリ販促</label>
     <div id="app-inputs"></div>
-    <button class="btn btn-outline" style="padding:10px; font-size:14px; margin-bottom:20px;" onclick="addAppRow()">+ アプリ追加</button>
+    <button type="button" class="btn btn-outline" style="padding:10px; font-size:14px; margin-bottom:20px;" onclick="addAppRow()">+ アプリ追加</button>
 
     <label style="font-size:14px; font-weight:700; display:block; margin-bottom:8px;">重点商品</label>
     <div id="focus-inputs"></div>
-    <button class="btn btn-outline" style="padding:10px; font-size:14px; margin-bottom:20px;" onclick="addFocusRow()">+ 重点商品追加</button>
+    <button type="button" class="btn btn-outline" style="padding:10px; font-size:14px; margin-bottom:20px;" onclick="addFocusRow()">+ 重点商品追加</button>
     
     <label style="font-size:14px; font-weight:700; display:block; margin-bottom:8px;">特別発注</label>
     <div id="special-inputs"></div>
-    <button class="btn btn-outline" style="padding:10px; font-size:14px;" onclick="addSpecialRow()">+ 特発追加</button>
+    <button type="button" class="btn btn-outline" style="padding:10px; font-size:14px;" onclick="addSpecialRow()">+ 特発追加</button>
   </div>
 
   <div class="card">
@@ -290,14 +289,14 @@
     <div class="card-title"><div class="card-title-left"><span class="material-symbols-rounded text-primary">monitoring</span>数値報告ツール</div></div>
     <p style="font-size:12px; color:var(--text-muted);">「個数」「円」「千円」のいずれかに入力があれば抽出されます。</p>
     <div id="report-store-list"></div>
-    <button class="btn" style="margin-top:16px;" onclick="generateReport()">テキスト生成</button>
+    <button type="button" class="btn" style="margin-top:16px;" onclick="generateReport()">テキスト生成</button>
   </div>
   <div class="card" style="background:#1f2937; color:white;">
     <div class="card-title" style="color:white;"><div class="card-title-left"><span class="material-symbols-rounded">content_copy</span>出力結果</div></div>
     <textarea id="report-output" rows="8" style="background:#374151; color:white; border:none;"></textarea>
     <div class="flex-row">
-      <button class="btn btn-outline flex-1" style="color:white; border-color:white;" onclick="copyText('report-output')">コピー</button>
-      <button class="btn flex-1" style="background:var(--primary);" onclick="shareText('report-output')">LINE等で共有</button>
+      <button type="button" class="btn btn-outline flex-1" style="color:white; border-color:white;" onclick="copyText('report-output')">コピー</button>
+      <button type="button" class="btn flex-1" style="background:var(--primary);" onclick="shareText('report-output')">LINE等で共有</button>
     </div>
   </div>
 </div>
@@ -318,10 +317,10 @@
       <h3 style="font-size:15px; margin:0 0 12px 0; display:flex; align-items:center; gap:6px;">
         <span class="material-symbols-rounded">forum</span> 打ち合わせ内容
       </h3>
-      <div class="voice-input-wrapper"><span>①</span><input type="text" id="m1"><button class="voice-btn" onclick="startDictation('m1', this)"><span class="material-symbols-rounded">mic</span></button></div>
-      <div class="voice-input-wrapper"><span>②</span><input type="text" id="m2"><button class="voice-btn" onclick="startDictation('m2', this)"><span class="material-symbols-rounded">mic</span></button></div>
-      <div class="voice-input-wrapper"><span>③</span><input type="text" id="m3"><button class="voice-btn" onclick="startDictation('m3', this)"><span class="material-symbols-rounded">mic</span></button></div>
-      <div class="voice-input-wrapper"><span>④</span><input type="text" id="m4"><button class="voice-btn" onclick="startDictation('m4', this)"><span class="material-symbols-rounded">mic</span></button></div>
+      <div class="voice-input-wrapper"><span>①</span><input type="text" id="m1"><button type="button" class="voice-btn" onclick="startDictation('m1', this)"><span class="material-symbols-rounded">mic</span></button></div>
+      <div class="voice-input-wrapper"><span>②</span><input type="text" id="m2"><button type="button" class="voice-btn" onclick="startDictation('m2', this)"><span class="material-symbols-rounded">mic</span></button></div>
+      <div class="voice-input-wrapper"><span>③</span><input type="text" id="m3"><button type="button" class="voice-btn" onclick="startDictation('m3', this)"><span class="material-symbols-rounded">mic</span></button></div>
+      <div class="voice-input-wrapper"><span>④</span><input type="text" id="m4"><button type="button" class="voice-btn" onclick="startDictation('m4', this)"><span class="material-symbols-rounded">mic</span></button></div>
     </div>
 
     <div class="card" style="background:var(--bg-light); border:none; box-shadow:none; padding:12px;">
@@ -339,7 +338,7 @@
     <label style="font-size:14px; font-weight:700; display:block; margin-bottom:8px;">📝 所感</label>
     <div class="voice-input-wrapper" style="margin-bottom:12px; padding:0;">
       <textarea id="dr-memos" rows="3" style="margin:0; border:none; border-radius:var(--radius-sm) 0 0 var(--radius-sm);"></textarea>
-      <button class="voice-btn" style="height:auto; min-height:80px; border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin-right:4px;" onclick="startDictation('dr-memos', this)"><span class="material-symbols-rounded">mic</span></button>
+      <button type="button" class="voice-btn" style="height:auto; min-height:80px; border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin-right:4px;" onclick="startDictation('dr-memos', this)"><span class="material-symbols-rounded">mic</span></button>
     </div>
 
     <label class="photo-upload-btn" onclick="document.getElementById('dr-photo-up').click()">
@@ -348,15 +347,15 @@
     <input type="file" id="dr-photo-up" multiple accept="image/*" style="display:none;" onchange="handleGenPhoto(event)">
     <div id="g-photo-grid" class="photo-grid"></div>
 
-    <button class="btn" style="margin-top:16px;" onclick="generateExcelStyleReport()">日報テキストを生成</button>
+    <button type="button" class="btn" style="margin-top:16px;" onclick="generateExcelStyleReport()">日報テキストを生成</button>
   </div>
 
   <div class="card" style="background:#1f2937; color:white;">
     <div class="card-title" style="color:white;"><div class="card-title-left"><span class="material-symbols-rounded">content_copy</span>完成テキスト</div></div>
     <textarea id="dr-final-output" rows="12" style="background:#374151; color:white; border:none;"></textarea>
     <div class="flex-row">
-      <button class="btn btn-outline flex-1" style="color:white; border-color:white;" onclick="copyText('dr-final-output')">コピー</button>
-      <button class="btn flex-1" style="background:var(--primary);" onclick="shareText('dr-final-output')">LINE/メールで送る</button>
+      <button type="button" class="btn btn-outline flex-1" style="color:white; border-color:white;" onclick="copyText('dr-final-output')">コピー</button>
+      <button type="button" class="btn flex-1" style="background:var(--primary);" onclick="shareText('dr-final-output')">LINE/メールで送る</button>
     </div>
   </div>
 </div>
@@ -457,9 +456,9 @@
     
     let l = '';
     routines.forEach((r, i) => {
-      l += `<div class="excel-row" style="margin-bottom:4px;">
+      l += `<div class="excel-row" style="margin-bottom:6px;">
         <input type="text" value="${r}" readonly style="flex:1; margin:0; border:none; background:transparent; font-size:14px !important;">
-        <button style="background:#fee2e2; color:var(--danger); border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="delRoutine(${i})">削除</button>
+        <button type="button" style="background:#fee2e2; color:var(--danger); border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer; touch-action:manipulation;" onclick="delRoutine(${i})">削除</button>
       </div>`;
     });
     document.getElementById('setting-routines-list').innerHTML = l;
@@ -514,12 +513,12 @@
         <div class="task-card ${t.priority?'priority':''}" data-id="${t.id}">
           <div class="task-badge">${t.category}</div>
           <div style="font-weight:700; font-size:15px; margin-bottom:8px;">${t.text}</div>
-          <div style="display:flex; justify-content:space-between; font-size:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
             <span style="font-weight:700; color:var(--primary);">${t.target}</span>
             <span style="background:var(--border); padding:2px 6px; border-radius:4px;">${t.deadline||'未定'}</span>
           </div>
           <div class="task-actions">
-            <button onclick="delT('${t.id}')" style="color:var(--danger); background:none; padding:0;"><span class="material-symbols-rounded">delete</span></button>
+            <button type="button" class="task-del-btn" onclick="delT('${t.id}')" aria-label="削除"><span class="material-symbols-rounded" style="font-size:20px;">delete</span></button>
           </div>
         </div>`);
       });
@@ -532,7 +531,12 @@
     ['todo', 'doing', 'done'].forEach(st => {
       const el = document.getElementById(`list-${st}`);
       sortables.push(new Sortable(el, {
-        group: 'shared', animation: 150, delay: 100, delayOnTouchOnly: true,
+        group: 'shared',
+        animation: 150,
+        delay: 120,
+        delayOnTouchOnly: true,
+        filter: '.task-actions, .task-del-btn, button',
+        preventOnFilter: false,
         onEnd: function (evt) {
           const itemEl = evt.item; const taskId = itemEl.getAttribute('data-id');
           const newStatus = evt.to.id.replace('list-', '');
@@ -582,7 +586,7 @@
   }
 
   // ==========================================
-  // ② 案内作成（完全自由入力＆ゆったり2段組＆値保存対応）
+  // ② 案内作成
   // ==========================================
   function crDelBtn() { return `<button type="button" class="del-row-btn" onclick="this.closest('.input-group-box').remove(); updatePreview();"><span class="material-symbols-rounded">close</span></button>`; }
   
@@ -684,7 +688,6 @@
     </div>`); 
   }
 
-  // 入力値データとして保存・復元する関数（バグ完全修正版）
   function saveHistory() {
     const state = {
       baseDate: document.getElementById('base-date').value,
@@ -890,7 +893,7 @@
   function delGenPhoto(id) { genPhotos = genPhotos.filter(x => x.id !== id); renderGenPhotos(); }
   function renderGenPhotos() {
     const g = document.getElementById('g-photo-grid'); g.innerHTML = '';
-    genPhotos.forEach(p => { g.insertAdjacentHTML('beforeend', `<div class="photo-thumb"><img src="${p.url}"><button class="del-btn" onclick="delGenPhoto(${p.id})"><span class="material-symbols-rounded">close</span></button></div>`); });
+    genPhotos.forEach(p => { g.insertAdjacentHTML('beforeend', `<div class="photo-thumb"><img src="${p.url}"><button type="button" class="del-btn" onclick="delGenPhoto(${p.id})"><span class="material-symbols-rounded">close</span></button></div>`); });
   }
 
   function generateExcelStyleReport() {
